@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Portal - Lab 4 Gas Absorption</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./ct_logo.png" />
+
+  <!-- Tailwind for modern styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: {
+            'xs': '475px',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sukhumvit+Set:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .thai-font { font-family: 'Sukhumvit Set', 'Noto Sans Thai', sans-serif; }
+    .btn { @apply px-3 py-2 text-sm rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1; }
+    .btn-blue { @apply bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500; }
+    .btn-red { @apply bg-red-600 hover:bg-red-700 text-white focus:ring-red-500; }
+  </style>
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-36N5TW5XXL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-36N5TW5XXL');
+  </script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header with responsive logo + titles -->
+  <header class="max-w-6xl mx-auto p-4 sm:p-6 pt-6 sm:pt-8">
+    <div class="flex flex-col items-center gap-3 sm:gap-4">
+      <!-- Logo wrapper centered for all screen sizes -->
+      <div class="flex items-center justify-center">
+        <img
+          src="./ct_logo.png"
+          alt="Department of Chemical Technology, Faculty of Science, Chulalongkorn University logo"
+          class="h-16 w-auto object-contain sm:h-20 md:h-24 lg:h-28"
+        />
+      </div>
+
+      <!-- Title and subtitle -->
+      <div class="text-center flex-1">
+        <h1 class="text-base sm:text-lg md:text-2xl font-semibold text-gray-900 leading-tight">
+          Department of Chemical Technology, Faculty of Science, Chulalongkorn University
+        </h1>
+        <p class="text-xs sm:text-sm md:text-base text-gray-600 mt-1">
+          2306452 Unit Operations Laboratory II : Lab 4 Gas Absorption - Admin Portal
+        </p>
+        <p class="text-xs sm:text-sm md:text-base text-gray-900 font-semibold mt-1">
+          Instructor: Asst. Prof. Dr. Pichaya In-na
+          <br class="hidden sm:block" />
+          <span class="sm:hidden"> | </span>
+          TA: Mr. Kantaphan Punnaanan
+        </p>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex items-center gap-2">
+        <button id="back-btn" class="px-3 py-2 text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Back to main page">
+          <span class="flex items-center gap-1">
+            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span class="hidden xs:inline">Back</span>
+          </span>
+        </button>
+        <button id="logout-btn" class="px-3 py-2 text-xs sm:text-sm bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-label="Logout">
+          <span class="flex items-center gap-1">
+            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span class="hidden xs:inline">Logout</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 sm:p-6">
+    <!-- Welcome Section -->
+    <div class="bg-white shadow rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-purple-700 mb-1">Admin Dashboard</h2>
+          <p class="text-xs sm:text-sm text-gray-600">Lab 4 Gas Absorption Analytics</p>
+        </div>
+        <div class="flex flex-col sm:items-end gap-2">
+          <div class="text-xs text-gray-500">Last updated:</div>
+          <div id="update-date" class="text-xs sm:text-sm font-semibold text-gray-700">—</div>
+          <button id="refresh-btn" class="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span class="hidden xs:inline">Refresh</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white shadow rounded-xl mb-3 sm:mb-4">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-2 sm:space-x-4 md:space-x-8 px-2 sm:px-3 md:px-4 overflow-x-auto" aria-label="Tabs">
+          <button id="status-tab" class="tab-button active py-2 sm:py-3 px-2 sm:px-3 border-b-2 border-blue-500 font-medium text-xs sm:text-sm text-blue-600 whitespace-nowrap">
+            Status
+          </button>
+          <button id="group-stats-tab" class="tab-button py-2 sm:py-3 px-2 sm:px-3 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+            Group Stats
+          </button>
+          <button id="individual-stats-tab" class="tab-button py-2 sm:py-3 px-2 sm:px-3 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+            Individual Stats
+          </button>
+          <button id="scoring-criteria-tab" class="tab-button py-2 sm:py-3 px-2 sm:px-3 border-b-2 border-transparent font-medium text-xs sm:text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+            Scoring Criteria
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Status Tab Content -->
+    <div id="status-content" class="tab-content">
+      <!-- Statistics Overview -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <div class="text-lg sm:text-xl md:text-2xl font-bold text-blue-700" id="total-groups-admin">0</div>
+              <div class="text-xs sm:text-sm text-gray-600">Total Groups</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <div class="text-lg sm:text-xl md:text-2xl font-bold text-green-700" id="completed-groups-admin">0</div>
+              <div class="text-xs sm:text-sm text-gray-600">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <div class="text-lg sm:text-xl md:text-2xl font-bold text-yellow-700" id="pending-groups-admin">0</div>
+              <div class="text-xs sm:text-sm text-gray-600">Pending</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <div class="text-lg sm:text-xl md:text-2xl font-bold text-red-700" id="overdue-groups-admin">0</div>
+              <div class="text-xs sm:text-sm text-gray-600">Overdue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+        <!-- Completion Status Distribution -->
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Completion Status</h3>
+          <div class="relative h-48 sm:h-56 md:h-64">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Submission Trends -->
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Submission Trends</h3>
+          <div class="relative h-48 sm:h-56 md:h-64">
+            <canvas id="trendsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Analytics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+        <!-- Group Performance Distribution -->
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Group Performance</h3>
+          <div class="relative h-48 sm:h-56 md:h-64">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Due Date Analysis -->
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Due Date Compliance</h3>
+          <div class="relative h-48 sm:h-56 md:h-64">
+            <canvas id="dueDateChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Safety Compliance -->
+        <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Safety Compliance</h3>
+          <div class="relative h-48 sm:h-56 md:h-64">
+            <canvas id="safetyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Group Analysis Table -->
+      <div class="bg-white shadow rounded-xl p-3 sm:p-4 md:p-6">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Group Analysis</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Safety</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prelab</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Report</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculation</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion %</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="bg-white divide-y divide-gray-200">
+              <!-- Table content will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-container" class="flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 hidden">
+      <div class="flex items-center gap-2 text-gray-500 mb-2">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <span class="text-sm sm:text-base font-medium">Loading...</span>
+      </div>
+      <p class="text-xs text-gray-400">Fetching latest data</p>
+    </div>
+
+    <!-- Group Stats Tab Content -->
+    <div id="group-stats-content" class="tab-content hidden">
+      <!-- Group Performance Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-green-700" id="avg-group-score">0</div>
+              <div class="text-sm text-gray-600">Average Group Score</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-blue-700" id="highest-group-score">0</div>
+              <div class="text-sm text-gray-600">Highest Score</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-yellow-700" id="graded-groups">0</div>
+              <div class="text-sm text-gray-600">Graded Groups</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-purple-700" id="total-points">0</div>
+              <div class="text-sm text-gray-600">Total Points</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group Performance Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Group Score Distribution</h3>
+          <div class="relative h-64">
+            <canvas id="groupScoreChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Score by Category</h3>
+          <div class="relative h-64">
+            <canvas id="categoryScoreChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group Performance Table -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Group Performance Details</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Theory (3)</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results (4)</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appendix (5)</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discussion (8)</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Score</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+              </tr>
+            </thead>
+            <tbody id="group-performance-table-body">
+              <!-- Table content will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Individual Stats Tab Content -->
+    <div id="individual-stats-content" class="tab-content hidden">
+      <!-- Filter Controls -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter & Search</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Group Filter -->
+          <div>
+            <label for="group-filter" class="block text-sm font-medium text-gray-700 mb-2">Group</label>
+            <select id="group-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Groups</option>
+            </select>
+          </div>
+          
+          <!-- Score Range Filter -->
+          <div>
+            <label for="score-range-filter" class="block text-sm font-medium text-gray-700 mb-2">Score Range</label>
+            <select id="score-range-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Scores</option>
+              <option value="90-100">90-100%</option>
+              <option value="80-89">80-89%</option>
+              <option value="70-79">70-79%</option>
+              <option value="60-69">60-69%</option>
+              <option value="below-60">Below 60%</option>
+              <option value="no-score">No Score</option>
+            </select>
+          </div>
+          
+          <!-- Status Filter -->
+          <div>
+            <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Status</option>
+              <option value="✓">Completed</option>
+              <option value="✗">Pending</option>
+            </select>
+          </div>
+          
+          <!-- Search -->
+          <div>
+            <label for="student-search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <input type="text" id="student-search" placeholder="Search by name or ID..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+        
+        <!-- Filter Actions -->
+        <div class="flex items-center gap-3 mt-4">
+          <button id="apply-filters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Apply Filters
+          </button>
+          <button id="clear-filters" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            Clear All
+          </button>
+          <div class="text-sm text-gray-600">
+            <span id="filtered-count">0</span> students shown
+          </div>
+        </div>
+      </div>
+
+      <!-- Individual Performance Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-indigo-700" id="total-students">0</div>
+              <div class="text-sm text-gray-600">Total Students</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-green-700" id="students-graded">0</div>
+              <div class="text-sm text-gray-600">Students Graded</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-blue-700" id="avg-student-score">0</div>
+              <div class="text-sm text-gray-600">Avg Total Score</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-purple-700" id="students-per-group">0</div>
+              <div class="text-sm text-gray-600">Avg Students/Group</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Individual Performance Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Scores per Group</h3>
+          <div class="relative h-64">
+            <canvas id="studentsPerGroupChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Score Distribution</h3>
+          <div class="relative h-64">
+            <canvas id="groupSizeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score Distribution Curve -->
+      <div class="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Score Distribution Curve</h3>
+          <div class="relative h-80 mb-4">
+            <canvas id="distributionCurveChart"></canvas>
+          </div>
+          <!-- Statistics will be displayed here -->
+          <div id="distribution-stats-container" class="mt-4">
+            <!-- Statistics content will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Individual Students Table -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Details by Group</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Score</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody id="individual-students-table-body">
+              <!-- Table content will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scoring Criteria Tab Content -->
+    <div id="scoring-criteria-content" class="tab-content hidden">
+      <!-- Scoring System Overview -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Lab 4 Gas Absorption - Scoring System Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-blue-700">70</div>
+            <div class="text-sm text-blue-600">Total Possible Points</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-green-700">10</div>
+            <div class="text-sm text-green-600">Performance Score</div>
+          </div>
+          <div class="bg-purple-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-purple-700">20</div>
+            <div class="text-sm text-purple-600">Oral Exam</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-orange-700">40</div>
+            <div class="text-sm text-orange-600">Prelab + Group Report</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score Range Criteria -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Overall Performance Ranges</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score Range</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color Code</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strengths</th>
+                <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Areas for Improvement</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium text-gray-900">Excellent</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-900">80-100%</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm"><span class="inline-block w-4 h-4 bg-green-600 rounded"></span></td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-green-600 font-semibold">Excellent</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Overall excellent performance</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Maintain current performance level</td>
+              </tr>
+              <tr>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium text-gray-900">Good</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-900">60-79%</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm"><span class="inline-block w-4 h-4 bg-yellow-600 rounded"></span></td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-yellow-600 font-semibold">Good</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Solid performance across components</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Focus on specific weak areas</td>
+              </tr>
+              <tr>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium text-gray-900">Fair</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-900">40-59%</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm"><span class="inline-block w-4 h-4 bg-orange-600 rounded"></span></td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-orange-600 font-semibold">Fair</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Some areas showing competence</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Focus on overall performance improvement</td>
+              </tr>
+              <tr>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium text-gray-900">Needs Improvement</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-900">0-39%</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm"><span class="inline-block w-4 h-4 bg-red-600 rounded"></span></td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-red-600 font-semibold">Needs Improvement</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Room for growth identified</td>
+                <td class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-600">• Comprehensive improvement needed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Individual Component Criteria -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <!-- Performance Score Criteria -->
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Score (0-10 points)</h3>
+          <div class="space-y-3">
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm font-semibold text-green-700">8-10 points: Excellent</div>
+              <div class="text-xs text-gray-600 mt-1">• Strong lab performance and participation</div>
+            </div>
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <div class="text-sm font-semibold text-yellow-700">5-7 points: Good</div>
+              <div class="text-xs text-gray-600 mt-1">• Adequate participation and engagement</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm font-semibold text-red-700">0-4 points: Needs Work</div>
+              <div class="text-xs text-gray-600 mt-1">• Improve lab participation and engagement</div>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div class="text-xs font-semibold text-gray-700 mb-2">Components:</div>
+            <div class="text-xs text-gray-600 space-y-1">
+              <div>• Punctuality (1 point)</div>
+              <div>• Active Participation (2 points)</div>
+              <div>• Knowledge/Skills (2 points)</div>
+              <div>• Manner (1 point)</div>
+              <div>• Presentation (2 points)</div>
+              <div>• Group Learning (2 points)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prelab Score Criteria -->
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Prelab Score (0-20 points)</h3>
+          <div class="space-y-3">
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm font-semibold text-green-700">16-20 points: Excellent</div>
+              <div class="text-xs text-gray-600 mt-1">• Excellent pre-laboratory preparation</div>
+            </div>
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <div class="text-sm font-semibold text-yellow-700">10-15 points: Good</div>
+              <div class="text-xs text-gray-600 mt-1">• Good preparation demonstrated</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm font-semibold text-red-700">0-9 points: Needs Work</div>
+              <div class="text-xs text-gray-600 mt-1">• Enhance pre-laboratory preparation</div>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div class="text-xs font-semibold text-gray-700 mb-2">Components:</div>
+            <div class="text-xs text-gray-600 space-y-1">
+              <div>• Theory/Calculation Method (4 points)</div>
+              <div>• Relevant Background Knowledge (4 points)</div>
+              <div>• Determination of Variables (4 points)</div>
+              <div>• Experimental Plan and Procedures (4 points)</div>
+              <div>• Safety Considerations (4 points)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group Report Score Criteria -->
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Group Report Score (0-20 points)</h3>
+          <div class="space-y-3">
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm font-semibold text-green-700">16-20 points: Excellent</div>
+              <div class="text-xs text-gray-600 mt-1">• Strong group collaboration and report quality</div>
+            </div>
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <div class="text-sm font-semibold text-yellow-700">10-15 points: Good</div>
+              <div class="text-xs text-gray-600 mt-1">• Good group work demonstrated</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm font-semibold text-red-700">0-9 points: Needs Work</div>
+              <div class="text-xs text-gray-600 mt-1">• Improve group report contribution</div>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div class="text-xs font-semibold text-gray-700 mb-2">Components:</div>
+            <div class="text-xs text-gray-600 space-y-1">
+              <div>• Theory, Experimental Methods (3 points)</div>
+              <div>• Experimental Results (4 points)</div>
+              <div>• Appendix (calculation, tables) (5 points)</div>
+              <div>• Discussion and Conclusion (8 points)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oral Exam Score Criteria -->
+        <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Oral Exam Score (0-20 points)</h3>
+          <div class="space-y-3">
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm font-semibold text-green-700">16-20 points: Excellent</div>
+              <div class="text-xs text-gray-600 mt-1">• Excellent oral communication skills</div>
+            </div>
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <div class="text-sm font-semibold text-yellow-700">10-15 points: Good</div>
+              <div class="text-xs text-gray-600 mt-1">• Good communication demonstrated</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm font-semibold text-red-700">0-9 points: Needs Work</div>
+              <div class="text-xs text-gray-600 mt-1">• Develop oral presentation skills</div>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div class="text-xs font-semibold text-gray-700 mb-2">Assessment Areas:</div>
+            <div class="text-xs text-gray-600 space-y-1">
+              <div>• Understanding of concepts</div>
+              <div>• Communication clarity</div>
+              <div>• Problem-solving ability</div>
+              <div>• Technical knowledge demonstration</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Analysis Algorithm -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Analysis Algorithm</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <h4 class="font-semibold text-blue-800 mb-3">Analysis Process</h4>
+            <div class="text-sm text-blue-700 space-y-2">
+              <div class="flex items-start">
+                <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">1</span>
+                <span>Component Analysis: Each component evaluated against specific thresholds</span>
+              </div>
+              <div class="flex items-start">
+                <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">2</span>
+                <span>Strengths Identification: Scores meeting high thresholds generate positive feedback</span>
+              </div>
+              <div class="flex items-start">
+                <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">3</span>
+                <span>Improvement Areas: Scores below improvement thresholds generate constructive feedback</span>
+              </div>
+              <div class="flex items-start">
+                <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">4</span>
+                <span>Overall Assessment: Total percentage determines overall performance category</span>
+              </div>
+              <div class="flex items-start">
+                <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold mr-3 mt-0.5">5</span>
+                <span>Visual Indicators: Color coding provides immediate visual feedback</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4">
+            <h4 class="font-semibold text-green-800 mb-3">Threshold-Based Analysis</h4>
+            <div class="text-sm text-green-700 space-y-2">
+              <div class="flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                <span>Performance Score ≥ 8: Strong lab performance</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                <span>Prelab Score ≥ 16: Excellent preparation</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                <span>Group Report ≥ 16: Strong collaboration</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                <span>Oral Exam ≥ 16: Excellent communication</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                <span>Total Percentage ≥ 80%: Overall excellent</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Usage Mapping -->
+      <div class="bg-white shadow rounded-xl p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Page Usage Mapping</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-purple-50 rounded-lg p-4">
+            <h4 class="font-semibold text-purple-800 mb-3">Admin Portal</h4>
+            <div class="text-sm text-purple-700 space-y-1">
+              <div>• Individual Stats Tab: Score filtering, color coding</div>
+              <div>• Group Stats Tab: Performance distribution</div>
+              <div>• Status Tab: Completion tracking</div>
+              <div>• Performance analysis modal</div>
+            </div>
+          </div>
+          <div class="bg-blue-50 rounded-lg p-4">
+            <h4 class="font-semibold text-blue-800 mb-3">Scores Page</h4>
+            <div class="text-sm text-blue-700 space-y-1">
+              <div>• Individual performance analysis</div>
+              <div>• Component-wise score breakdown</div>
+              <div>• Group comparison metrics</div>
+              <div>• Strengths/improvements display</div>
+            </div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4">
+            <h4 class="font-semibold text-green-800 mb-3">Main Status Page</h4>
+            <div class="text-sm text-green-700 space-y-1">
+              <div>• Status tracking (✓/✗)</div>
+              <div>• Component submission tracking</div>
+              <div>• Due date compliance monitoring</div>
+              <div>• Statistics summary</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Student Detail Modal -->
+  <div id="student-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 9999;">
+    <div class="relative top-20 mx-auto p-4 sm:p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-200">
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900" id="modal-student-name">Student Details</h3>
+            <p class="text-xs sm:text-sm text-gray-600" id="modal-student-id">Student ID</p>
+          </div>
+          <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Student Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4 my-4 sm:my-6">
+          <div class="bg-blue-50 rounded-lg p-3 sm:p-4">
+            <div class="text-xl sm:text-2xl font-bold text-blue-700" id="modal-total-score">0</div>
+            <div class="text-xs sm:text-sm text-blue-600">Total Score</div>
+            <div class="text-xs text-gray-500" id="modal-total-percentage">0%</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-3 sm:p-4">
+            <div class="text-xl sm:text-2xl font-bold text-green-700" id="modal-performance-score">0</div>
+            <div class="text-xs sm:text-sm text-green-600">Performance</div>
+            <div class="text-xs text-gray-500">/10 points</div>
+          </div>
+          <div class="bg-indigo-50 rounded-lg p-3 sm:p-4">
+            <div class="text-xl sm:text-2xl font-bold text-indigo-700" id="modal-oral-score">0</div>
+            <div class="text-xs sm:text-sm text-indigo-600">Oral Exam</div>
+            <div class="text-xs text-gray-500">/20 points</div>
+          </div>
+          <div class="bg-purple-50 rounded-lg p-3 sm:p-4">
+            <div class="text-xl sm:text-2xl font-bold text-purple-700" id="modal-prelab-score">0</div>
+            <div class="text-xs sm:text-sm text-purple-600">Prelab</div>
+            <div class="text-xs text-gray-500">/20 points</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-3 sm:p-4">
+            <div class="text-xl sm:text-2xl font-bold text-orange-700" id="modal-group-score">0</div>
+            <div class="text-xs sm:text-sm text-orange-600">Group Report</div>
+            <div class="text-xs text-gray-500">/20 points</div>
+          </div>
+        </div>
+
+        <!-- Detailed Score Breakdown -->
+        <div class="mb-4 sm:mb-6">
+          <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Detailed Score Breakdown</h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Component</th>
+                  <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                  <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max</th>
+                  <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                  <th class="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody id="modal-score-breakdown">
+                <!-- Score breakdown will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Performance Analysis -->
+        <div class="mb-4 sm:mb-6">
+          <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Performance Analysis</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <h5 class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Strengths</h5>
+              <ul id="modal-strengths" class="text-xs sm:text-sm text-gray-600 space-y-1">
+                <!-- Strengths will be populated by JavaScript -->
+              </ul>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <h5 class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Areas for Improvement</h5>
+              <ul id="modal-improvements" class="text-xs sm:text-sm text-gray-600 space-y-1">
+                <!-- Areas for improvement will be populated by JavaScript -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group Comparison -->
+        <div class="mb-4 sm:mb-6">
+          <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Group Comparison</h4>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 text-center">
+              <div>
+                <div class="text-base sm:text-lg font-semibold text-gray-900" id="modal-group-rank">—</div>
+                <div class="text-xs sm:text-sm text-gray-600">Group Rank</div>
+              </div>
+              <div>
+                <div class="text-base sm:text-lg font-semibold text-gray-900" id="modal-group-average">—</div>
+                <div class="text-xs sm:text-sm text-gray-600">Group Average</div>
+              </div>
+              <div>
+                <div class="text-base sm:text-lg font-semibold text-gray-900" id="modal-class-rank">—</div>
+                <div class="text-xs sm:text-sm text-gray-600">Class Rank</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end pt-3 sm:pt-4 border-t border-gray-200">
+          <button id="close-modal-btn" class="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs sm:text-sm text-gray-600 mt-4 sm:mt-6 px-4 sm:px-0">
+    <div class="space-y-1 sm:space-y-2">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0">
+        <span>Developed by&nbsp;</span>
+        <a href="https://kantaphan.netlify.app/" class="text-blue-700 hover:text-blue-800 hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+          Punnaanan K. (KTP)
+        </a>
+        <span class="hidden sm:inline">@</span>
+        <span class="sm:hidden">@</span>
+        <a href="https://niab-lab.works/" class="text-blue-700 hover:text-blue-800 hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+          NIAB LAB
+        </a>
+      </div>
+      <div class="text-xs text-gray-500 px-2">
+        Admin Portal for 2306452 Unit Operations Laboratory II - Lab 4 Gas Absorption
+      </div>
+      <div class="text-xs text-gray-400 px-2">
+        © 2025 Department of Chemical Technology, Faculty of Science, Chulalongkorn University
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Configuration
+    const CONFIG = {
+      urls: {
+        checklist: './452-Check List-KTP.csv',
+        grading: './452-Full Report.csv',
+        groups: './452-Group-Name.csv',
+        performance: './452-Performance.csv',
+        oralExam: './452-Oral Exam.csv',
+        prelab: './452-Prelab.csv'
+      },
+      cache: {
+        duration: 5 * 60 * 1000,
+        maxRetries: 3,
+        retryDelay: 1000
+      }
+    };
+
+    // Only these columns (in this exact order) will be displayed:
+    const TARGET_HEADERS = [
+      'Status', 'NO.', 'Date', 'Group', 'Safety',
+      'Prelab', 'Full Report', 'Calculation', 'Due', 'Over Due'
+    ];
+
+    // Header variants
+    const HEADER_VARIANTS = {
+      'Status': ['Status', 'Grading Status'],
+      'NO.': ['NO.', 'No.', 'NO', 'No', 'Number'],
+      'Date': ['Date', 'DATE'],
+      'Group': ['Group', 'GROUP'],
+      'Safety': ['Safety', 'SAFETY'],
+      'Prelab': ['Prelab', 'Pre-lab', 'Pre lab'],
+      'Full Report': ['Full Report', 'FullReport', 'Report'],
+      'Calculation': ['Calculation', 'Calculations'],
+      'Due': ['Due', 'DUE'],
+      'Over Due': ['Over Due', 'Overdue', 'OverDue']
+    };
+
+    // Global state
+    const state = {
+      dataCache: { data: null, timestamp: 0, headers: null },
+      charts: {},
+      caches: {
+        grading: { data: null, timestamp: 0 },
+        groups: { data: null, timestamp: 0 },
+        performance: { data: null, timestamp: 0 },
+        oralExam: { data: null, timestamp: 0 },
+        prelab: { data: null, timestamp: 0 }
+      },
+      groupScores: {},
+      individualScores: {},
+      filteredStudents: null,
+      currentFilters: {
+        group: '',
+        scoreRange: '',
+        status: '',
+        search: ''
+      }
+    };
+
+    // Normalize header by removing spaces/punctuation and lowering case
+    const normalize = (s) => {
+      if (!s) return '';
+      return String(s)
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[._-]+/g, '')
+        .replace(/[:;/\\]+/g, '');
+    };
+
+    // Get CSS class based on status value
+    function getStatusClass(value, column) {
+      const val = String(value).trim();
+      
+      if (column === 'Status') {
+        if (val === '✓') return 'text-green-600 font-semibold';
+        if (val === '✗') return 'text-red-600 font-semibold';
+        return 'text-gray-600';
+      }
+      
+      if (column === 'Over Due') {
+        if (val === '✓') return 'text-red-600 font-semibold';
+        if (val === '✗') return 'text-green-600 font-semibold';
+        return 'text-gray-600';
+      }
+      
+      if (['Safety', 'Prelab', 'Full Report', 'Calculation'].includes(column)) {
+        if (val === '1') return 'text-green-600 font-semibold';
+        if (val === '0') return 'text-red-600 font-semibold';
+        if (val === '-') return 'text-gray-500 italic';
+        return 'text-gray-600';
+      }
+      
+      return 'text-gray-700';
+    }
+
+    function buildHeaderMap(csvHeaders) {
+      const map = {};
+      const normalizedCsv = csvHeaders.map(h => ({ raw: h, norm: normalize(h) }));
+
+      for (const target of TARGET_HEADERS) {
+        const variants = new Set([target, ...(HEADER_VARIANTS[target] || [])]);
+        let found = csvHeaders.find(h => variants.has(h)) || 
+                   csvHeaders.find(h => variants.has(String(h).trim())) ||
+                   normalizedCsv.find(o => [...variants].map(normalize).includes(o.norm))?.raw;
+        map[target] = found || null;
+      }
+      return map;
+    }
+
+    async function fetchCsvText(url, retryCount = 0) {
+      try {
+        const bust = (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+        const res = await fetch(url + bust, { 
+          cache: 'no-store',
+          headers: { 'Accept': 'text/csv,text/plain,*/*', 'Cache-Control': 'no-cache' }
+        });
+        
+        if (!res.ok) {
+          const snippet = await res.text().catch(() => '');
+          throw new Error(`Fetch failed: ${res.status} ${res.statusText}${snippet ? ' - ' + snippet.slice(0, 200) : ''}`);
+        }
+        
+        // Return both text and last-modified header
+        const text = await res.text();
+        const lastModified = res.headers.get('last-modified');
+        return { text, lastModified };
+      } catch (error) {
+        if (retryCount < CONFIG.cache.maxRetries) {
+          console.warn(`Fetch attempt ${retryCount + 1} failed, retrying...`, error.message);
+          await new Promise(resolve => setTimeout(resolve, CONFIG.cache.retryDelay * (retryCount + 1)));
+          return fetchCsvText(url, retryCount + 1);
+        }
+        throw error;
+      }
+    }
+
+    function calculateStatistics(rows, headerMap) {
+      if (!rows?.length) return;
+
+      const stats = { completed: 0, pending: 0, overdue: 0 };
+      
+      rows.forEach(row => {
+        const status = row[headerMap['Status']] || '';
+        const overDue = row[headerMap['Over Due']] || '';
+        
+        if (status === '✓') stats.completed++;
+        else if (status === '✗') overDue === '✓' ? stats.overdue++ : stats.pending++;
+        else stats.pending++;
+      });
+
+      const elements = {
+        'total-groups-admin': rows.length,
+        'completed-groups-admin': stats.completed,
+        'pending-groups-admin': stats.pending,
+        'overdue-groups-admin': stats.overdue
+      };
+      
+      Object.entries(elements).forEach(([id, value]) => {
+        document.getElementById(id).textContent = value;
+      });
+    }
+
+    // Unified chart creation function
+    function createChart(id, type, data, options = {}) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      
+      if (state.charts[id]) {
+        state.charts[id].destroy();
+      }
+      
+      state.charts[id] = new Chart(canvas, {
+        type,
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          ...options
+        }
+      });
+    }
+
+    function createCharts(rows, headerMap) {
+      // Calculate data for charts
+      const statusData = { completed: 0, pending: 0, overdue: 0 };
+      const trendsData = {
+        safety: { submitted: 0, notSubmitted: 0 },
+        prelab: { submitted: 0, notSubmitted: 0 },
+        fullreport: { submitted: 0, notSubmitted: 0 },
+        calculation: { submitted: 0, notSubmitted: 0 }
+      };
+      const performanceData = [];
+      const dueDateData = { onTime: 0, overdue: 0 };
+      const safetyData = { compliant: 0, nonCompliant: 0 };
+
+      rows.forEach(row => {
+        const status = row[headerMap['Status']] || '';
+        const overDue = row[headerMap['Over Due']] || '';
+        const group = row[headerMap['Group']] || '';
+        
+        // Status distribution
+        if (status === '✓') statusData.completed++;
+        else if (status === '✗') overDue === '✓' ? statusData.overdue++ : statusData.pending++;
+        else statusData.pending++;
+
+        // Trends data
+        ['Safety', 'Prelab', 'Full Report', 'Calculation'].forEach(field => {
+          const value = row[headerMap[field]] || '';
+          const key = field.toLowerCase().replace(/\s+/g, '');
+          value === '1' ? trendsData[key].submitted++ : trendsData[key].notSubmitted++;
+        });
+
+        // Performance data
+        const components = ['Safety', 'Prelab', 'Full Report', 'Calculation'];
+        const completed = components.filter(field => row[headerMap[field]] === '1').length;
+        const completion = Math.round((completed / 4) * 100);
+        performanceData.push({ group, completion });
+
+        // Due date and safety data
+        overDue === '✓' ? dueDateData.overdue++ : dueDateData.onTime++;
+        row[headerMap['Safety']] === '1' ? safetyData.compliant++ : safetyData.nonCompliant++;
+      });
+
+      // Create Status Distribution Chart
+      createChart('statusChart', 'doughnut', {
+        labels: ['Completed', 'Pending', 'Overdue'],
+        datasets: [{
+          data: [statusData.completed, statusData.pending, statusData.overdue],
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } });
+
+      // Create Trends Chart
+      createChart('trendsChart', 'bar', {
+        labels: ['Safety', 'Prelab', 'Full Report', 'Calculation'],
+        datasets: [{
+          label: 'Submitted',
+          data: [trendsData.safety.submitted, trendsData.prelab.submitted, trendsData.fullreport.submitted, trendsData.calculation.submitted],
+          backgroundColor: '#10B981'
+        }, {
+          label: 'Not Submitted',
+          data: [trendsData.safety.notSubmitted, trendsData.prelab.notSubmitted, trendsData.fullreport.notSubmitted, trendsData.calculation.notSubmitted],
+          backgroundColor: '#EF4444'
+        }]
+      }, {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } },
+        plugins: { legend: { position: 'top' } }
+      });
+
+      // Create Performance Distribution Chart
+      createChart('performanceChart', 'bar', {
+        labels: performanceData.map(d => d.group),
+        datasets: [{
+          label: 'Completion %',
+          data: performanceData.map(d => d.completion),
+          backgroundColor: '#3B82F6',
+          borderColor: '#1E40AF',
+          borderWidth: 1
+        }]
+      }, {
+        scales: { y: { beginAtZero: true, max: 100 } }
+      });
+
+      // Create Due Date Chart
+      createChart('dueDateChart', 'pie', {
+        labels: ['On Time', 'Overdue'],
+        datasets: [{
+          data: [dueDateData.onTime, dueDateData.overdue],
+          backgroundColor: ['#10B981', '#EF4444'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      }, {
+        plugins: { legend: { position: 'bottom' } }
+      });
+
+      // Create Safety Chart
+      createChart('safetyChart', 'doughnut', {
+        labels: ['Compliant', 'Non-Compliant'],
+        datasets: [{
+          data: [safetyData.compliant, safetyData.nonCompliant],
+          backgroundColor: ['#10B981', '#EF4444'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      }, {
+        plugins: { legend: { position: 'bottom' } }
+      });
+    }
+
+    function renderDetailedTable(rows, headerMap) {
+      const tbody = document.getElementById('admin-table-body');
+      
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-3 sm:px-4 py-2 sm:py-3 text-center text-gray-500 text-xs sm:text-sm">No data available</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => {
+        const group = row[headerMap['Group']] || '';
+        const status = row[headerMap['Status']] || '';
+        const safety = row[headerMap['Safety']] || '';
+        const prelab = row[headerMap['Prelab']] || '';
+        const fullReport = row[headerMap['Full Report']] || '';
+        const calculation = row[headerMap['Calculation']] || '';
+        const due = row[headerMap['Due']] || '';
+        
+        // Calculate completion percentage
+        const components = [safety, prelab, fullReport, calculation];
+        const completed = components.filter(c => c === '1').length;
+        const completion = Math.round((completed / 4) * 100);
+        
+        const statusClass = getStatusClass(status, 'Status');
+        const safetyClass = getStatusClass(safety, 'Safety');
+        const prelabClass = getStatusClass(prelab, 'Prelab');
+        const fullReportClass = getStatusClass(fullReport, 'Full Report');
+        const calculationClass = getStatusClass(calculation, 'Calculation');
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm font-medium text-gray-900">${group}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${statusClass}">${status}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${safetyClass}">${safety}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${prelabClass}">${prelab}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${fullReportClass}">${fullReport}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${calculationClass}">${calculation}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${due}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+              <div class="flex items-center">
+                <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                  <div class="bg-blue-600 h-2 rounded-full" style="width: ${completion}%"></div>
+                </div>
+                <span class="text-xs text-gray-600">${completion}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+      });
+      
+      // Show selected tab content
+      const contentId = tabName + '-content';
+      const content = document.getElementById(contentId);
+      if (content) {
+        content.classList.remove('hidden');
+      }
+      
+      // Add active class to selected tab
+      const tabButton = document.getElementById(tabName + '-tab');
+      if (tabButton) {
+        tabButton.classList.add('active', 'border-blue-500', 'text-blue-600');
+        tabButton.classList.remove('border-transparent', 'text-gray-500');
+      }
+      
+      // Load data for the selected tab
+      if (tabName === 'group-stats') {
+        loadGroupStats();
+      } else if (tabName === 'individual-stats') {
+        loadIndividualStats();
+      } else if (tabName === 'scoring-criteria') {
+        // No data loading needed for scoring criteria tab - it's static content
+      }
+    }
+
+    // Unified CSV loader
+    async function loadCsvData(cacheKey, forceRefresh = false) {
+      const now = Date.now();
+      const cache = state.caches[cacheKey];
+      
+      if (!forceRefresh && cache.data && (now - cache.timestamp) < CONFIG.cache.duration) {
+        return cache.data;
+      }
+
+      try {
+        const result = await fetchCsvText(CONFIG.urls[cacheKey]);
+        const cleanText = result.text.replace(/^\uFEFF/, '');
+        const parsed = Papa.parse(cleanText, { header: true, skipEmptyLines: true });
+        
+        // Use last-modified time from CSV file, fallback to current time
+        const csvLastModified = result.lastModified ? new Date(result.lastModified) : new Date();
+        
+        state.caches[cacheKey] = {
+          data: parsed.data || [],
+          timestamp: csvLastModified.getTime()
+        };
+        
+        return state.caches[cacheKey].data;
+      } catch (error) {
+        console.error(`Error loading ${cacheKey} data:`, error);
+        return [];
+      }
+    }
+
+    // Load group statistics
+    async function loadGroupStats() {
+      const gradingData = await loadCsvData('grading');
+      const statusData = state.dataCache.data;
+      const headerMap = state.dataCache.headers;
+      
+      if (!gradingData || gradingData.length === 0) {
+        console.warn('No grading data available');
+        return;
+      }
+
+      // Process grading data
+      const groupScores = {};
+      const categoryScores = {
+        theory: [],
+        results: [],
+        appendix: [],
+        discussion: []
+      };
+
+      // Extract scores from grading data
+      gradingData.forEach(row => {
+        const category = row.Group;
+        if (category && category !== 'Total Score' && category.trim() !== '') {
+          Object.keys(row).forEach(groupNum => {
+            if (groupNum !== 'Group' && row[groupNum] && row[groupNum] !== '' && row[groupNum] !== null) {
+              const score = parseFloat(row[groupNum]);
+              if (!isNaN(score) && score >= 0) {
+                if (!groupScores[groupNum]) {
+                  groupScores[groupNum] = { theory: 0, results: 0, appendix: 0, discussion: 0, total: 0 };
+                }
+                
+                if (category.includes('Theory')) {
+                  groupScores[groupNum].theory = score;
+                  categoryScores.theory.push(score);
+                } else if (category.includes('Results')) {
+                  groupScores[groupNum].results = score;
+                  categoryScores.results.push(score);
+                } else if (category.includes('Appendix')) {
+                  groupScores[groupNum].appendix = score;
+                  categoryScores.appendix.push(score);
+                } else if (category.includes('Discussion')) {
+                  groupScores[groupNum].discussion = score;
+                  categoryScores.discussion.push(score);
+                }
+                
+                groupScores[groupNum].total += score;
+              }
+            }
+          });
+        }
+      });
+
+      // Update statistics
+      const scores = Object.values(groupScores).map(g => g.total).filter(s => s > 0);
+      const stats = {
+        'avg-group-score': scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0,
+        'highest-group-score': scores.length > 0 ? Math.max(...scores) : 0,
+        'graded-groups': scores.length,
+        'total-points': scores.reduce((a, b) => a + b, 0).toFixed(1)
+      };
+      
+      Object.entries(stats).forEach(([id, value]) => {
+        document.getElementById(id).textContent = value;
+      });
+
+      // Store group scores globally for individual calculations
+      state.groupScores = groupScores;
+
+      // Create charts
+      createGroupCharts(groupScores, categoryScores);
+      renderGroupPerformanceTable(groupScores);
+    }
+
+    // Load individual statistics
+    async function loadIndividualStats() {
+      const [groupNameData, performanceData, oralExamData, prelabData] = await Promise.all([
+        loadCsvData('groups'),
+        loadCsvData('performance'),
+        loadCsvData('oralExam'),
+        loadCsvData('prelab')
+      ]);
+      const statusData = state.dataCache.data;
+      const headerMap = state.dataCache.headers;
+      
+      if (!groupNameData || groupNameData.length === 0) {
+        console.warn('No group name data available');
+        return;
+      }
+
+      // Create lookup maps for individual scores
+      const performanceMap = {};
+      const oralExamMap = {};
+      const prelabMap = {};
+
+      // Build performance score lookup
+      performanceData.forEach(row => {
+        const studentId = row.ID;
+        const totalScore = parseFloat(row['Total (10)']) || 0;
+        if (studentId && studentId.trim() !== '' && !isNaN(totalScore) && totalScore >= 0) {
+          performanceMap[studentId] = totalScore;
+        }
+      });
+
+      // Build oral exam score lookup
+      oralExamData.forEach(row => {
+        const studentId = row.ID;
+        const oralScore = parseFloat(row['Oral Exam (20)']) || 0;
+        if (studentId && studentId.trim() !== '' && !isNaN(oralScore) && oralScore >= 0) {
+          oralExamMap[studentId] = oralScore;
+        }
+      });
+
+      // Build prelab score lookup
+      prelabData.forEach(row => {
+        const studentId = row.ID;
+        const prelabScore = parseFloat(row['Total (20)']) || 0;
+        if (studentId && studentId.trim() !== '' && !isNaN(prelabScore) && prelabScore >= 0) {
+          prelabMap[studentId] = prelabScore;
+        }
+      });
+
+      // Process group name data and calculate comprehensive individual scores
+      const studentsByGroup = {};
+      const individualScores = [];
+      const groupScores = state.groupScores || {};
+
+      groupNameData.forEach(row => {
+        const group = row.Group;
+        const studentId = row.ID;
+        const name = row.Name;
+        if (group && group.trim() !== '' && studentId && studentId.trim() !== '' && name && name.trim() !== '') {
+          if (!studentsByGroup[group]) {
+            studentsByGroup[group] = [];
+          }
+          
+          // Get individual scores for this student
+          const performanceScore = performanceMap[studentId] || 0;
+          const oralExamScore = oralExamMap[studentId] || 0;
+          const prelabScore = prelabMap[studentId] || 0;
+          const groupReportScore = groupScores[group] ? groupScores[group].total : 0;
+          
+          // Calculate total individual score (Performance + Oral Exam + Prelab + Group Report)
+          const totalIndividualScore = performanceScore + oralExamScore + prelabScore + groupReportScore;
+          
+          const studentData = {
+            studentId: studentId.trim(),
+            name: name.trim(),
+            performanceScore: performanceScore,
+            oralExamScore: oralExamScore,
+            prelabScore: prelabScore,
+            groupReportScore: groupReportScore,
+            totalIndividualScore: totalIndividualScore,
+            hasScore: totalIndividualScore > 0
+          };
+          
+          studentsByGroup[group].push(studentData);
+          
+          // Add to individual scores array for statistics
+          if (totalIndividualScore > 0) {
+            individualScores.push(totalIndividualScore);
+          }
+        }
+      });
+
+      // Calculate statistics
+      const totalStudents = groupNameData.length;
+      const studentsGraded = individualScores.length;
+      const avgStudentScore = individualScores.length > 0 ? 
+        (individualScores.reduce((a, b) => a + b, 0) / individualScores.length).toFixed(1) : '0';
+      const avgStudentsPerGroup = (totalStudents / Object.keys(studentsByGroup).length).toFixed(1);
+
+      const stats = {
+        'total-students': totalStudents,
+        'students-graded': studentsGraded,
+        'avg-student-score': avgStudentScore,
+        'students-per-group': avgStudentsPerGroup
+      };
+      
+      Object.entries(stats).forEach(([id, value]) => {
+        document.getElementById(id).textContent = value;
+      });
+
+      // Store individual scores globally for table rendering
+      state.individualScores = studentsByGroup;
+      state.filteredStudents = studentsByGroup;
+
+      // Populate group filter dropdown
+      populateGroupFilter(studentsByGroup);
+
+      // Update initial filtered count
+      const totalFilteredStudents = Object.values(studentsByGroup).flat().length;
+      document.getElementById('filtered-count').textContent = totalFilteredStudents;
+
+      // Create charts
+      createIndividualCharts(studentsByGroup);
+      renderIndividualStudentsTable(studentsByGroup, statusData, headerMap);
+    }
+
+    // Populate group filter dropdown
+    function populateGroupFilter(studentsByGroup) {
+      const groupFilter = document.getElementById('group-filter');
+      if (!groupFilter) return;
+      
+      // Clear existing options except "All Groups"
+      groupFilter.innerHTML = '<option value="">All Groups</option>';
+      
+      // Add group options
+      const sortedGroups = Object.keys(studentsByGroup).sort((a, b) => parseInt(a) - parseInt(b));
+      sortedGroups.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group;
+        option.textContent = `Group ${group}`;
+        groupFilter.appendChild(option);
+      });
+    }
+
+    // Apply filters to student data
+    function applyFilters() {
+      const groupFilter = document.getElementById('group-filter')?.value || '';
+      const scoreRangeFilter = document.getElementById('score-range-filter')?.value || '';
+      const statusFilter = document.getElementById('status-filter')?.value || '';
+      const searchFilter = document.getElementById('student-search')?.value.toLowerCase() || '';
+
+      // Update current filters state
+      state.currentFilters = {
+        group: groupFilter,
+        scoreRange: scoreRangeFilter,
+        status: statusFilter,
+        search: searchFilter
+      };
+
+      // Filter students
+      const filteredStudents = filterStudents(state.individualScores, state.currentFilters);
+      state.filteredStudents = filteredStudents;
+
+      // Update filtered count
+      const totalStudents = Object.values(state.individualScores).flat().length;
+      const filteredCount = Object.values(filteredStudents).flat().length;
+      document.getElementById('filtered-count').textContent = filteredCount;
+
+      // Re-render table with filtered data
+      const statusData = state.dataCache.data;
+      const headerMap = state.dataCache.headers;
+      renderIndividualStudentsTable(filteredStudents, statusData, headerMap);
+    }
+
+    // Filter students based on current filters
+    function filterStudents(studentsByGroup, filters) {
+      const filtered = {};
+
+      Object.keys(studentsByGroup).forEach(group => {
+        // Apply group filter
+        if (filters.group && group !== filters.group) {
+          return;
+        }
+
+        const groupStudents = studentsByGroup[group].filter(student => {
+          // Apply score range filter
+          if (filters.scoreRange) {
+            const maxScore = 70;
+            const percentage = maxScore > 0 ? Math.round((student.totalIndividualScore / maxScore) * 100) : 0;
+            
+            switch (filters.scoreRange) {
+              case '90-100':
+                if (percentage < 90) return false;
+                break;
+              case '80-89':
+                if (percentage < 80 || percentage >= 90) return false;
+                break;
+              case '70-79':
+                if (percentage < 70 || percentage >= 80) return false;
+                break;
+              case '60-69':
+                if (percentage < 60 || percentage >= 70) return false;
+                break;
+              case 'below-60':
+                if (percentage >= 60) return false;
+                break;
+              case 'no-score':
+                if (student.totalIndividualScore > 0) return false;
+                break;
+            }
+          }
+
+          // Apply search filter
+          if (filters.search) {
+            const searchText = filters.search;
+            const matchesName = student.name.toLowerCase().includes(searchText);
+            const matchesId = student.studentId.toLowerCase().includes(searchText);
+            if (!matchesName && !matchesId) return false;
+          }
+
+          return true;
+        });
+
+        // Apply status filter
+        if (filters.status) {
+          const statusData = state.dataCache.data;
+          const headerMap = state.dataCache.headers;
+          const groupStatusMap = {};
+          
+          if (statusData && headerMap) {
+            statusData.forEach(row => {
+              const rowGroup = row[headerMap['Group']];
+              const status = row[headerMap['Status']];
+              if (rowGroup && status) {
+                groupStatusMap[rowGroup] = status;
+              }
+            });
+          }
+
+          const groupStatus = groupStatusMap[group] || '';
+          if (groupStatus !== filters.status) {
+            return;
+          }
+        }
+
+        if (groupStudents.length > 0) {
+          filtered[group] = groupStudents;
+        }
+      });
+
+      return filtered;
+    }
+
+    // Clear all filters
+    function clearFilters() {
+      // Reset filter controls
+      document.getElementById('group-filter').value = '';
+      document.getElementById('score-range-filter').value = '';
+      document.getElementById('status-filter').value = '';
+      document.getElementById('student-search').value = '';
+
+      // Reset state
+      state.currentFilters = {
+        group: '',
+        scoreRange: '',
+        status: '',
+        search: ''
+      };
+      state.filteredStudents = state.individualScores;
+
+      // Update count and re-render
+      const totalStudents = Object.values(state.individualScores).flat().length;
+      document.getElementById('filtered-count').textContent = totalStudents;
+
+      const statusData = state.dataCache.data;
+      const headerMap = state.dataCache.headers;
+      renderIndividualStudentsTable(state.individualScores, statusData, headerMap);
+    }
+
+    // Create group performance charts
+    function createGroupCharts(groupScores, categoryScores) {
+      // Group Score Distribution Chart
+      const sortedGroups = Object.keys(groupScores).sort((a, b) => parseInt(a) - parseInt(b));
+      if (sortedGroups.length > 0) {
+        createChart('groupScoreChart', 'bar', {
+          labels: sortedGroups,
+          datasets: [{
+            label: 'Total Score',
+            data: sortedGroups.map(group => groupScores[group].total),
+            backgroundColor: '#3B82F6',
+            borderColor: '#1E40AF',
+            borderWidth: 1
+          }]
+        }, {
+          scales: { y: { beginAtZero: true } }
+        });
+      } else {
+        // Show empty state for group score chart
+        const canvas = document.getElementById('groupScoreChart');
+        if (canvas) {
+          const container = canvas.parentElement;
+          container.innerHTML = '<div class="flex items-center justify-center h-64 text-gray-500">No group score data available</div>';
+        }
+      }
+
+      // Category Score Chart
+      const avgScores = ['theory', 'results', 'appendix', 'discussion'].map(category => {
+        const scores = categoryScores[category];
+        return scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+      });
+      
+      if (avgScores.some(score => score > 0)) {
+        createChart('categoryScoreChart', 'bar', {
+          labels: ['Theory', 'Results', 'Appendix', 'Discussion'],
+          datasets: [{
+            label: 'Average Score',
+            data: avgScores,
+            backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
+            borderWidth: 1
+          }]
+        }, {
+          scales: { y: { beginAtZero: true } }
+        });
+      } else {
+        // Show empty state for category score chart
+        const canvas = document.getElementById('categoryScoreChart');
+        if (canvas) {
+          const container = canvas.parentElement;
+          container.innerHTML = '<div class="flex items-center justify-center h-64 text-gray-500">No category score data available</div>';
+        }
+      }
+    }
+
+    // Create individual performance charts
+    function createIndividualCharts(studentsByGroup) {
+      // Scores per Group Chart
+      const sortedGroups = Object.keys(studentsByGroup).sort((a, b) => parseInt(a) - parseInt(b));
+      const groupAverages = sortedGroups.map(group => {
+        const students = studentsByGroup[group];
+        const scores = students.map(s => s.totalIndividualScore).filter(s => s > 0);
+        return scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      });
+      
+      if (sortedGroups.length > 0 && groupAverages.some(avg => avg > 0)) {
+        createChart('studentsPerGroupChart', 'bar', {
+          labels: sortedGroups,
+          datasets: [{
+            label: 'Average Individual Score',
+            data: groupAverages,
+            backgroundColor: '#10B981',
+            borderColor: '#059669',
+            borderWidth: 1
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, callback: value => value.toFixed(1) }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: context => `Average Score: ${context.parsed.y.toFixed(1)}`
+              }
+            }
+          }
+        });
+      } else {
+        // Show empty state for students per group chart
+        const canvas = document.getElementById('studentsPerGroupChart');
+        if (canvas) {
+          const container = canvas.parentElement;
+          container.innerHTML = '<div class="flex items-center justify-center h-64 text-gray-500">No individual score data available</div>';
+        }
+      }
+
+      // Score Distribution Chart
+      
+      // Collect all individual scores
+      const allScores = [];
+      Object.values(studentsByGroup).forEach(students => {
+        students.forEach(student => {
+          if (student.totalIndividualScore > 0) {
+            allScores.push(student.totalIndividualScore);
+          }
+        });
+      });
+      
+      if (allScores.length > 0) {
+        // Create score ranges
+        const scoreRanges = {
+          '90-100': 0,
+          '80-89': 0,
+          '70-79': 0,
+          '60-69': 0,
+          'Below 60': 0
+        };
+        
+        allScores.forEach(score => {
+          if (score >= 90) {
+            scoreRanges['90-100']++;
+          } else if (score >= 80) {
+            scoreRanges['80-89']++;
+          } else if (score >= 70) {
+            scoreRanges['70-79']++;
+          } else if (score >= 60) {
+            scoreRanges['60-69']++;
+          } else {
+            scoreRanges['Below 60']++;
+          }
+        });
+
+        createChart('groupSizeChart', 'doughnut', {
+          labels: Object.keys(scoreRanges).map(range => `${range}%`),
+          datasets: [{
+            data: Object.values(scoreRanges),
+            backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        }, {
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                  return `${context.label}: ${context.parsed} students (${percentage}%)`;
+                }
+              }
+            }
+          }
+        });
+      } else {
+        // Show empty state for score distribution chart
+        const canvas = document.getElementById('groupSizeChart');
+        if (canvas) {
+          const container = canvas.parentElement;
+          container.innerHTML = '<div class="flex items-center justify-center h-64 text-gray-500">No score distribution data available</div>';
+        }
+      }
+
+      // Create distribution curve chart
+      createDistributionCurveChart(studentsByGroup);
+    }
+
+    // Create distribution curve chart
+    function createDistributionCurveChart(studentsByGroup) {
+      const canvas = document.getElementById('distributionCurveChart');
+      if (!canvas) return;
+      
+      // Collect all individual scores
+      const allScores = [];
+      Object.values(studentsByGroup).forEach(students => {
+        students.forEach(student => {
+          if (student.totalIndividualScore > 0) {
+            allScores.push(student.totalIndividualScore);
+          }
+        });
+      });
+      
+      if (allScores.length === 0) {
+        // Show empty state message
+        const statsContainer = document.getElementById('distribution-stats-container');
+        if (statsContainer) {
+          statsContainer.innerHTML = '<div class="text-center text-gray-500 text-sm">No score data available for distribution analysis</div>';
+        }
+        return; // No data to display
+      }
+      
+      // Create histogram bins (score ranges)
+      const binSize = 5; // 5-point bins
+      const minScore = Math.floor(Math.min(...allScores) / binSize) * binSize;
+      const maxScore = Math.ceil(Math.max(...allScores) / binSize) * binSize;
+      
+      // Ensure we have at least one bin
+      if (minScore === maxScore) {
+        const bins = { [`${minScore}-${minScore + binSize}`]: allScores.length };
+        const binLabels = [`${minScore}-${minScore + binSize}`];
+        createDistributionChart(bins, binLabels, allScores);
+        return;
+      }
+      
+      const bins = {};
+      const binLabels = [];
+      
+      // Initialize bins
+      for (let score = minScore; score < maxScore; score += binSize) {
+        const binKey = `${score}-${score + binSize}`;
+        bins[binKey] = 0;
+        binLabels.push(`${score}-${score + binSize}`);
+      }
+      
+      // Count scores in each bin
+      allScores.forEach(score => {
+        const binIndex = Math.floor((score - minScore) / binSize);
+        const binKey = Object.keys(bins)[binIndex];
+        if (bins[binKey] !== undefined) {
+          bins[binKey]++;
+        }
+      });
+      
+      createDistributionChart(bins, binLabels, allScores);
+    }
+    
+    function createDistributionChart(bins, binLabels, allScores) {
+      const canvas = document.getElementById('distributionCurveChart');
+      if (!canvas) return;
+      
+      // Calculate statistics for normal curve
+      const mean = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+      const variance = allScores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / allScores.length;
+      const stdDev = Math.sqrt(variance);
+      
+      // Get score range for curve generation
+      const minScore = Math.min(...allScores);
+      const maxScore = Math.max(...allScores);
+      
+      // Generate normal curve data
+      const curveData = [];
+      const curveLabels = [];
+      for (let score = minScore; score <= maxScore; score += 1) {
+        curveLabels.push(score.toString());
+        // Normal distribution formula
+        const normalizedScore = (score - mean) / stdDev;
+        const normalValue = Math.exp(-0.5 * normalizedScore * normalizedScore) / (stdDev * Math.sqrt(2 * Math.PI));
+        // Scale to match histogram
+        const scaledValue = normalValue * allScores.length * 5; // Use 5 as bin size
+        curveData.push(scaledValue);
+      }
+      
+      createChart('distributionCurveChart', 'bar', {
+        labels: binLabels,
+        datasets: [
+          {
+            label: 'Score Distribution',
+            data: Object.values(bins),
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1,
+            type: 'bar'
+          },
+          {
+            label: 'Normal Curve',
+            data: curveLabels.map((label, index) => {
+              const binStart = parseInt(label);
+              const curveIndex = Math.floor((binStart - minScore));
+              return curveData[curveIndex] || 0;
+            }),
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 3,
+            fill: false,
+            type: 'line',
+            pointRadius: 0,
+            tension: 0.1
+          }
+        ]
+      }, {
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: { title: { display: true, text: 'Score Range' } },
+          y: { title: { display: true, text: 'Number of Students' }, beginAtZero: true }
+        },
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.datasetIndex === 0 ? 
+                  `Students: ${context.parsed.y}` : 
+                  `Normal Curve: ${context.parsed.y.toFixed(2)}`;
+              }
+            }
+          }
+        }
+      });
+      
+      // Add statistics display
+      const statsContainer = document.getElementById('distribution-stats-container');
+      if (statsContainer) {
+        statsContainer.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
+            <div class="bg-blue-50 p-2 sm:p-3 rounded-lg">
+              <div class="font-semibold text-blue-800 text-xs sm:text-sm">Mean Score</div>
+              <div class="text-blue-600 text-xs sm:text-sm">${mean.toFixed(2)}</div>
+            </div>
+            <div class="bg-green-50 p-2 sm:p-3 rounded-lg">
+              <div class="font-semibold text-green-800 text-xs sm:text-sm">Standard Deviation</div>
+              <div class="text-green-600 text-xs sm:text-sm">${stdDev.toFixed(2)}</div>
+            </div>
+            <div class="bg-purple-50 p-2 sm:p-3 rounded-lg">
+              <div class="font-semibold text-purple-800 text-xs sm:text-sm">Sample Size</div>
+              <div class="text-purple-600 text-xs sm:text-sm">${allScores.length} students</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Render group performance table
+    function renderGroupPerformanceTable(groupScores) {
+      const tbody = document.getElementById('group-performance-table-body');
+      
+      if (!groupScores || Object.keys(groupScores).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 sm:px-4 py-2 sm:py-3 text-center text-gray-500 text-xs sm:text-sm">No grading data available</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = Object.keys(groupScores).sort((a, b) => parseInt(a) - parseInt(b)).map(group => {
+        const scores = groupScores[group];
+        const percentage = scores.total > 0 ? Math.round((scores.total / 20) * 100) : 0; // Assuming max score is 20
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-900">Group ${group}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.theory}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.results}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.appendix}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.discussion}</td>
+            <td class="px-4 py-3 text-sm font-semibold text-gray-900">${scores.total}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+              <div class="flex items-center">
+                <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                  <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+                <span class="text-xs text-gray-600">${percentage}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render individual students table
+    function renderIndividualStudentsTable(studentsByGroup, statusData, headerMap) {
+      const tbody = document.getElementById('individual-students-table-body');
+      
+      if (!studentsByGroup || Object.keys(studentsByGroup).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-3 sm:px-4 py-2 sm:py-3 text-center text-gray-500 text-xs sm:text-sm">No student data available</td></tr>';
+        return;
+      }
+
+      // Create a map of group status from status data
+      const groupStatusMap = {};
+      if (statusData && headerMap) {
+        statusData.forEach(row => {
+          const group = row[headerMap['Group']];
+          const status = row[headerMap['Status']];
+          if (group && status) {
+            groupStatusMap[group] = status;
+          }
+        });
+      }
+
+      tbody.innerHTML = Object.keys(studentsByGroup).sort((a, b) => parseInt(a) - parseInt(b)).map(group => {
+        const students = studentsByGroup[group];
+        const groupStatus = groupStatusMap[group] || '—';
+        const statusClass = getStatusClass(groupStatus, 'Status');
+        
+        return students.map(student => {
+          // Format individual score with color coding
+          const totalScore = student.totalIndividualScore;
+          const maxScore = 70; // Performance(10) + Oral Exam(20) + Prelab(20) + Group Report(20)
+          const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+          
+          let scoreClass = 'text-gray-500';
+          if (totalScore > 0) {
+            if (percentage >= 80) scoreClass = 'text-green-600 font-semibold';
+            else if (percentage >= 60) scoreClass = 'text-yellow-600 font-semibold';
+            else if (percentage >= 40) scoreClass = 'text-orange-600 font-semibold';
+            else scoreClass = 'text-red-600 font-semibold';
+          }
+          
+          return `
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-900">Group ${group}</td>
+              <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${student.studentId}</td>
+              <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 thai-font">
+                <button class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer" onclick="showStudentDetails('${student.studentId}', '${group}')">
+                  ${student.name}
+                </button>
+              </td>
+              <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${scoreClass}">
+                ${totalScore > 0 ? `${totalScore}/${maxScore} (${percentage}%)` : '—'}
+              </td>
+              <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${statusClass}">${groupStatus}</td>
+            </tr>
+          `;
+        }).join('');
+      }).join('');
+    }
+
+    async function loadAndRenderAdmin(forceRefresh = false) {
+      const loadingContainer = document.getElementById('loading-container');
+      const updateEl = document.getElementById('update-date');
+
+      // Show loading state
+      loadingContainer.classList.remove('hidden');
+      loadingContainer.style.display = 'flex';
+
+      try {
+        // Check cache first
+        const now = Date.now();
+        if (!forceRefresh && state.dataCache.data && (now - state.dataCache.timestamp) < CONFIG.cache.duration) {
+          console.log('Using cached data for admin');
+          updateEl.textContent = new Date(state.dataCache.timestamp).toLocaleString();
+          calculateStatistics(state.dataCache.data, state.dataCache.headers);
+          createCharts(state.dataCache.data, state.dataCache.headers);
+          renderDetailedTable(state.dataCache.data, state.dataCache.headers);
+          loadingContainer.style.display = 'none';
+          return;
+        }
+
+        const result = await fetchCsvText(CONFIG.urls.checklist);
+        const cleanText = result.text.replace(/^\uFEFF/, '');
+        const parsed = Papa.parse(cleanText, { header: true, skipEmptyLines: true });
+        
+        if (parsed.errors?.length) {
+          console.warn('Papa Parse warnings:', parsed.errors);
+        }
+        
+        const rows = parsed.data || [];
+        const headers = parsed.meta?.fields || [];
+        const headerMap = buildHeaderMap(headers);
+
+        // Use last-modified time from CSV file, fallback to current time
+        const csvLastModified = result.lastModified ? new Date(result.lastModified) : new Date();
+
+        // Update cache
+        state.dataCache = {
+          data: rows,
+          timestamp: csvLastModified.getTime(),
+          headers: headerMap
+        };
+
+        updateEl.textContent = csvLastModified.toLocaleString();
+        calculateStatistics(rows, headerMap);
+        createCharts(rows, headerMap);
+        renderDetailedTable(rows, headerMap);
+        
+      } catch (e) {
+        console.error('Error loading admin data:', e);
+        loadingContainer.innerHTML = `
+          <div class="p-6 rounded-md bg-red-50 border border-red-200 text-red-700">
+            <div class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p class="font-semibold">Failed to load admin data</p>
+                <p class="text-sm mt-1">${e.message}</p>
+                <button onclick="loadAndRenderAdmin(true)" class="mt-2 text-sm text-red-600 hover:text-red-800 underline">
+                  Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } finally {
+        loadingContainer.style.display = 'none';
+      }
+    }
+
+    // Event listeners
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      loadAndRenderAdmin(true);
+    });
+
+    // Tab event listeners
+    document.getElementById('status-tab').addEventListener('click', () => {
+      switchTab('status');
+    });
+
+    document.getElementById('group-stats-tab').addEventListener('click', () => {
+      switchTab('group-stats');
+    });
+
+    document.getElementById('individual-stats-tab').addEventListener('click', () => {
+      switchTab('individual-stats');
+    });
+
+    document.getElementById('scoring-criteria-tab').addEventListener('click', () => {
+      switchTab('scoring-criteria');
+    });
+
+    // Filter event listeners
+    document.getElementById('apply-filters').addEventListener('click', applyFilters);
+    document.getElementById('clear-filters').addEventListener('click', clearFilters);
+    
+    // Auto-apply filters on input change
+    document.getElementById('student-search').addEventListener('input', () => {
+      // Debounce search to avoid too many calls
+      clearTimeout(window.searchTimeout);
+      window.searchTimeout = setTimeout(applyFilters, 300);
+    });
+    
+    document.getElementById('group-filter').addEventListener('change', applyFilters);
+    document.getElementById('score-range-filter').addEventListener('change', applyFilters);
+    document.getElementById('status-filter').addEventListener('change', applyFilters);
+
+    // Student Detail Modal Functions
+    function showStudentDetails(studentId, group) {
+      const modal = document.getElementById('student-detail-modal');
+      const studentsByGroup = state.individualScores;
+      
+      if (!studentsByGroup || !studentsByGroup[group]) {
+        console.error('Student data not found');
+        return;
+      }
+      
+      // Find the specific student
+      const student = studentsByGroup[group].find(s => s.studentId === studentId);
+      if (!student) {
+        console.error('Student not found');
+        return;
+      }
+      
+      // Populate modal with student data
+      populateStudentModal(student, group);
+      
+      // Show modal
+      modal.classList.remove('hidden');
+    }
+    
+    function populateStudentModal(student, group) {
+      // Basic info
+      document.getElementById('modal-student-name').textContent = student.name;
+      document.getElementById('modal-student-id').textContent = `Student ID: ${student.studentId} | Group: ${group}`;
+      
+      // Overview cards
+      const totalScore = student.totalIndividualScore;
+      const maxScore = 70;
+      const totalPercentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+      
+      document.getElementById('modal-total-score').textContent = totalScore;
+      document.getElementById('modal-total-percentage').textContent = `${totalPercentage}%`;
+      document.getElementById('modal-performance-score').textContent = student.performanceScore;
+      document.getElementById('modal-oral-score').textContent = student.oralExamScore;
+      document.getElementById('modal-prelab-score').textContent = student.prelabScore;
+      document.getElementById('modal-group-score').textContent = student.groupReportScore;
+      
+      // Detailed score breakdown
+      populateScoreBreakdown(student);
+      
+      // Performance analysis
+      populatePerformanceAnalysis(student);
+      
+      // Group comparison
+      populateGroupComparison(student, group);
+    }
+    
+    function populateScoreBreakdown(student) {
+      const tbody = document.getElementById('modal-score-breakdown');
+      const components = [
+        { name: 'Performance', score: student.performanceScore, max: 10, description: 'Lab performance and participation' },
+        { name: 'Oral Exam', score: student.oralExamScore, max: 20, description: 'Oral examination score' },
+        { name: 'Prelab', score: student.prelabScore, max: 20, description: 'Pre-laboratory preparation' },
+        { name: 'Group Report', score: student.groupReportScore, max: 20, description: 'Group laboratory report' }
+      ];
+      
+      tbody.innerHTML = components.map(comp => {
+        const percentage = comp.max > 0 ? Math.round((comp.score / comp.max) * 100) : 0;
+        let statusClass = 'text-gray-500';
+        let statusText = 'Not Available';
+        
+        if (comp.score > 0) {
+          if (percentage >= 80) {
+            statusClass = 'text-green-600 font-semibold';
+            statusText = 'Excellent';
+          } else if (percentage >= 60) {
+            statusClass = 'text-yellow-600 font-semibold';
+            statusText = 'Good';
+          } else if (percentage >= 40) {
+            statusClass = 'text-orange-600 font-semibold';
+            statusText = 'Fair';
+          } else {
+            statusClass = 'text-red-600 font-semibold';
+            statusText = 'Needs Improvement';
+          }
+        }
+        
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
+              <div class="font-medium">${comp.name}</div>
+              <div class="text-xs text-gray-500">${comp.description}</div>
+            </td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-900">${comp.score}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${comp.max}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${percentage}%</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${statusClass}">${statusText}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function populatePerformanceAnalysis(student) {
+      const strengthsList = document.getElementById('modal-strengths');
+      const improvementsList = document.getElementById('modal-improvements');
+      
+      const strengths = [];
+      const improvements = [];
+      
+      // Analyze performance
+      if (student.performanceScore >= 8) {
+        strengths.push('Strong lab performance and participation');
+      } else if (student.performanceScore < 5) {
+        improvements.push('Improve lab participation and engagement');
+      }
+      
+      if (student.prelabScore >= 16) {
+        strengths.push('Excellent pre-laboratory preparation');
+      } else if (student.prelabScore < 10) {
+        improvements.push('Enhance pre-laboratory preparation');
+      }
+      
+      if (student.groupReportScore >= 16) {
+        strengths.push('Strong group collaboration and report quality');
+      } else if (student.groupReportScore < 10) {
+        improvements.push('Improve group report contribution');
+      }
+      
+      if (student.oralExamScore >= 16) {
+        strengths.push('Excellent oral communication skills');
+      } else if (student.oralExamScore < 10) {
+        improvements.push('Develop oral presentation skills');
+      }
+      
+      // Overall analysis
+      const totalPercentage = Math.round((student.totalIndividualScore / 70) * 100);
+      if (totalPercentage >= 80) {
+        strengths.push('Overall excellent performance');
+      } else if (totalPercentage < 60) {
+        improvements.push('Focus on overall performance improvement');
+      }
+      
+      // Populate lists
+      strengthsList.innerHTML = strengths.length > 0 ? 
+        strengths.map(s => `<li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>${s}</li>`).join('') :
+        '<li class="text-gray-500 italic">No data available yet</li>';
+        
+      improvementsList.innerHTML = improvements.length > 0 ? 
+        improvements.map(i => `<li class="flex items-center"><span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>${i}</li>`).join('') :
+        '<li class="text-gray-500 italic">No areas identified</li>';
+    }
+    
+    function populateGroupComparison(student, group) {
+      const studentsByGroup = state.individualScores;
+      const groupScores = state.groupScores;
+      
+      // Calculate group statistics
+      const groupStudents = studentsByGroup[group] || [];
+      const groupScoresList = groupStudents.map(s => s.totalIndividualScore).filter(s => s > 0);
+      const groupAverage = groupScoresList.length > 0 ? 
+        (groupScoresList.reduce((a, b) => a + b, 0) / groupScoresList.length).toFixed(1) : '0';
+      
+      // Calculate group rank
+      const sortedGroupScores = groupScoresList.sort((a, b) => b - a);
+      const groupRank = sortedGroupScores.indexOf(student.totalIndividualScore) + 1;
+      
+      // Calculate class rank (simplified - would need all students data)
+      const allStudents = Object.values(studentsByGroup).flat();
+      const allScores = allStudents.map(s => s.totalIndividualScore).filter(s => s > 0).sort((a, b) => b - a);
+      const classRank = allScores.indexOf(student.totalIndividualScore) + 1;
+      
+      document.getElementById('modal-group-rank').textContent = groupRank > 0 ? `#${groupRank}` : '—';
+      document.getElementById('modal-group-average').textContent = groupAverage;
+      document.getElementById('modal-class-rank').textContent = classRank > 0 ? `#${classRank}` : '—';
+    }
+    
+    function closeStudentModal() {
+      const modal = document.getElementById('student-detail-modal');
+      modal.classList.add('hidden');
+    }
+    
+    // Modal event listeners
+    document.getElementById('close-modal').addEventListener('click', closeStudentModal);
+    document.getElementById('close-modal-btn').addEventListener('click', closeStudentModal);
+    
+    // Close modal when clicking outside
+    document.getElementById('student-detail-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'student-detail-modal') {
+        closeStudentModal();
+      }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeStudentModal();
+      }
+    });
+
+    // Initialize
+    loadAndRenderAdmin();
+  </script>
+</body>
+</html>

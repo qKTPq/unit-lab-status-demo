@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lab 4: Gas Absorption Status by KTP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon (uses ct_logo.png) -->
+  <link rel="icon" type="image/png" href="./ct_logo.png" />
+  <link rel="shortcut icon" type="image/png" href="./ct_logo.png" />
+
+  <!-- Tailwind for modern styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: {
+            'xs': '475px',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts - Sukhumvit for Thai characters -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sukhumvit+Set:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .thai-font {
+      font-family: 'Sukhumvit Set', 'Noto Sans Thai', 'Thonburi', 'Loma', 'Garuda', sans-serif;
+    }
+  </style>
+  <!-- Papa Parse for robust CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-36N5TW5XXL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-36N5TW5XXL');
+</script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header with responsive logo + titles -->
+  <header class="max-w-6xl mx-auto p-4 sm:p-6 pt-6 sm:pt-8">
+    <div class="flex flex-col items-center gap-3 sm:gap-4">
+      <!-- Logo wrapper centered for all screen sizes -->
+      <div class="flex items-center justify-center">
+        <img
+          src="./ct_logo.png"
+          alt="Department of Chemical Technology, Faculty of Science, Chulalongkorn University logo"
+          class="h-16 w-auto object-contain sm:h-20 md:h-24 lg:h-28"
+        />
+      </div>
+
+      <!-- Title and subtitle -->
+      <div class="text-center flex-1">
+        <h1 class="text-base sm:text-lg md:text-2xl font-semibold text-gray-900 leading-tight">
+          Department of Chemical Technology, Faculty of Science, Chulalongkorn University
+        </h1>
+        <p class="text-xs sm:text-sm md:text-base text-gray-600 mt-1">
+          2306452 Unit Operations Laboratory II : Lab 4 Gas Absorption
+        </p>
+        <p class="text-xs sm:text-sm md:text-base text-gray-900 font-semibold mt-1">
+          Instructor: Asst. Prof. Dr. Pichaya In-na
+          <br class="hidden sm:block" />
+          <span class="sm:hidden"> | </span>
+          TA: Mr. Kantaphan Punnaanan
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 sm:p-6">
+    <div class="bg-white shadow rounded-xl p-4 sm:p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-2">
+        <!-- Changed to h2 to keep semantic structure (h1 already used above) -->
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-green-700 text-center sm:text-left">Lab 4: Gas Absorption Status</h2>
+        <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+          <button id="reload" class="w-20 sm:w-24 px-3 py-2 text-xs sm:text-sm bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Reload data from server" title="Reload data (Ctrl+R)">
+            <span class="flex items-center justify-center gap-1">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span>Reload</span>
+            </span>
+          </button>
+          <button id="score-btn" class="w-20 sm:w-24 px-3 py-2 text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Access Scores page" title="Scores (Ctrl+S)">
+            <span class="flex items-center justify-center gap-1">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              <span>Scores</span>
+            </span>
+          </button>
+          <button id="admin-btn" class="w-20 sm:w-24 px-3 py-2 text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2" aria-label="Admin Login" title="Admin Login (Ctrl+A)">
+            <span class="flex items-center justify-center gap-1">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              <span>Admin</span>
+            </span>
+          </button>
+          <button id="help-btn" class="w-20 sm:w-24 px-3 py-2 text-xs sm:text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts">
+            <span class="flex items-center justify-center gap-1">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Help</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Update date -->
+      <div class="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="font-medium text-green-700">Last updated:</span>
+          <span id="update-date" class="text-green-600">—</span>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div id="notice" class="hidden mb-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-800"></div>
+
+      <!-- Statistics Summary -->
+      <div id="stats-summary" class="hidden mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 sm:p-3 text-center">
+            <div class="text-lg sm:text-2xl font-bold text-blue-700" id="total-groups">0</div>
+            <div class="text-xs sm:text-sm text-blue-600">Total Groups</div>
+          </div>
+          <div class="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3 text-center">
+            <div class="text-lg sm:text-2xl font-bold text-green-700" id="completed-groups">0</div>
+            <div class="text-xs sm:text-sm text-green-600">Completed</div>
+          </div>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2 sm:p-3 text-center">
+            <div class="text-lg sm:text-2xl font-bold text-yellow-700" id="pending-groups">0</div>
+            <div class="text-xs sm:text-sm text-yellow-600">Pending</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3 text-center">
+            <div class="text-lg sm:text-2xl font-bold text-red-700" id="overdue-groups">0</div>
+            <div class="text-xs sm:text-sm text-red-600">Overdue</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Table container with horizontal scroll -->
+      <div class="mb-4 sm:mb-6">
+        <div id="table-container" class="overflow-x-auto text-xs sm:text-sm shadow-sm rounded-lg border border-gray-200" role="region" aria-label="Lab status data table" aria-live="polite" style="max-height: 70vh;">
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="flex items-center gap-3 text-gray-500 mb-2">
+              <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span class="text-lg font-medium">Loading lab data...</span>
+            </div>
+            <p class="text-sm text-gray-400">Please wait while we fetch the latest information</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remarks Section - Fixed outside scrollable area -->
+      <div id="remarks-section" class="hidden">
+        <div class="p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+          <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Remarks
+          </h3>
+          <div class="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 p-2 bg-white rounded-md border border-green-100">
+              <span class="font-semibold text-green-700 sm:min-w-fit">• Grading Status:</span>
+              <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                <span class="text-green-600 font-semibold">✓</span>
+                <span class="text-gray-700">= Completed,</span>
+                <span class="text-red-600 font-semibold">✗</span>
+                <span class="text-gray-700">= Not Completed</span>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 p-2 bg-white rounded-md border border-blue-100">
+              <span class="font-semibold text-blue-700 sm:min-w-fit">• Safety, Prelab, Full Report, Calculation:</span>
+              <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                <span class="text-green-600 font-semibold">1</span>
+                <span class="text-gray-700">= Submitted,</span>
+                <span class="text-red-600 font-semibold">0</span>
+                <span class="text-gray-700">= Not Submitted,</span>
+                <span class="text-gray-500 font-semibold">-</span>
+                <span class="text-gray-700">= Not Applicable</span>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 p-2 bg-white rounded-md border border-orange-100">
+              <span class="font-semibold text-orange-700 sm:min-w-fit">• Over Due:</span>
+              <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                <span class="text-red-600 font-semibold">✓</span>
+                <span class="text-gray-700">= Overdue,</span>
+                <span class="text-green-600 font-semibold">✗</span>
+                <span class="text-gray-700">= On Time</span>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 p-2 bg-white rounded-md border border-purple-100">
+              <span class="font-semibold text-purple-700 sm:min-w-fit">• Statistics:</span>
+              <span class="text-gray-700">Based on current grading status and due dates</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs sm:text-sm text-gray-600 mt-4 sm:mt-6 px-4 sm:px-0">
+      <div class="space-y-1 sm:space-y-2">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0">
+          <span>Developed by&nbsp;</span>
+          <a href="https://kantaphan.netlify.app/" class="text-blue-700 hover:text-blue-800 hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+            Punnaanan K. (KTP)
+          </a>
+          <span class="hidden sm:inline">@</span>
+          <span class="sm:hidden">@</span>
+          <a href="https://niab-lab.works/" class="text-blue-700 hover:text-blue-800 hover:underline font-medium" target="_blank" rel="noopener noreferrer">
+            NIAB LAB
+          </a>
+        </div>
+        <div class="text-xs text-gray-500 px-2">
+          For 2306452 Unit Operations Laboratory II - Lab 4 Gas Absorption
+        </div>
+        <div class="text-xs text-gray-400 px-2">
+          © 2025 Department of Chemical Technology, Faculty of Science, Chulalongkorn University
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Configuration
+    const CSV_URL = encodeURI('./452-Check List-KTP.csv');
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000; // 1 second
+
+    // Only these columns (in this exact order) will be displayed:
+    const TARGET_HEADERS = [
+      'Grading Status', 'NO.', 'Date', 'Group', 'Safety',
+      'Prelab', 'Full Report', 'Calculation', 'Due', 'Over Due'
+    ];
+
+    // Allow minor header variations (extra spaces, punctuation)
+    const ACCEPTABLE_VARIANTS = {
+      'Grading Status': ['Status', 'Grading Status'],
+      'NO.': ['NO.', 'No.', 'NO', 'No', 'Number', 'No. '],
+      'Date': ['Date', 'DATE'],
+      'Group': ['Group', 'GROUP'],
+      'Safety': ['Safety', 'SAFETY'],
+      'Prelab': ['Prelab', 'Prelab ', 'Pre-lab', 'Pre lab'],
+      'Full Report': ['Full Report', 'FullReport', 'Report'],
+      'Calculation': ['Calculation', 'Calculations'],
+      'Due': ['Due', 'DUE'],
+      'Over Due': ['Over Due', 'Overdue', 'OverDue', 'Over  Due', 'Over  due']
+    };
+
+    // Cache for data
+    let dataCache = {
+      data: null,
+      timestamp: 0,
+      headers: null
+    };
+
+    // Normalize header by removing spaces/punctuation and lowering case
+    const normalize = (s) => {
+      if (!s) return '';
+      return String(s)
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[._-]+/g, '')
+        .replace(/[:;/\\]+/g, '');
+    };
+
+    // Get CSS class based on status value
+    function getStatusClass(value, column) {
+      const val = String(value).trim();
+      
+      if (column === 'Grading Status') {
+        if (val === '✓') return 'text-green-600 font-semibold';
+        if (val === '✗') return 'text-red-600 font-semibold';
+        return 'text-gray-600';
+      }
+      
+      if (column === 'Over Due') {
+        if (val === '✓') return 'text-red-600 font-semibold';
+        if (val === '✗') return 'text-green-600 font-semibold';
+        return 'text-gray-600';
+      }
+      
+      if (['Safety', 'Prelab', 'Full Report', 'Calculation'].includes(column)) {
+        if (val === '1') return 'text-green-600 font-semibold';
+        if (val === '0') return 'text-red-600 font-semibold';
+        if (val === '-') return 'text-gray-500 italic';
+        return 'text-gray-600';
+      }
+      
+      return 'text-gray-700';
+    }
+
+    function buildHeaderMap(csvHeaders) {
+      const map = {};
+      const normalizedCsv = csvHeaders.map(h => ({ raw: h, norm: normalize(h) }));
+
+      for (const target of TARGET_HEADERS) {
+        const variants = new Set([target, ...(ACCEPTABLE_VARIANTS[target] || [])]);
+
+        // Try: exact raw | trimmed | normalized
+        let found = csvHeaders.find(h => variants.has(h));
+        if (!found) found = csvHeaders.find(h => variants.has(String(h).trim()));
+        if (!found) {
+          const normCandidates = [...variants].map(normalize);
+          const match = normalizedCsv.find(o => normCandidates.includes(o.norm));
+          if (match) found = match.raw;
+        }
+        map[target] = found || null;
+      }
+      return map;
+    }
+
+    function calculateStatistics(rows, headerMap) {
+      const statsSummary = document.getElementById('stats-summary');
+      const totalGroupsEl = document.getElementById('total-groups');
+      const completedGroupsEl = document.getElementById('completed-groups');
+      const pendingGroupsEl = document.getElementById('pending-groups');
+      const overdueGroupsEl = document.getElementById('overdue-groups');
+
+      if (!rows || rows.length === 0) {
+        statsSummary.classList.add('hidden');
+        return;
+      }
+
+      let totalGroups = rows.length;
+      let completedGroups = 0;
+      let pendingGroups = 0;
+      let overdueGroups = 0;
+
+      rows.forEach(row => {
+        const status = row[headerMap['Grading Status']] || '';
+        const overDue = row[headerMap['Over Due']] || '';
+        
+        if (status === '✓') {
+          completedGroups++;
+        } else if (status === '✗') {
+          if (overDue === '✓') {
+            overdueGroups++;
+          } else {
+            pendingGroups++;
+          }
+        } else {
+          pendingGroups++;
+        }
+      });
+
+      totalGroupsEl.textContent = totalGroups;
+      completedGroupsEl.textContent = completedGroups;
+      pendingGroupsEl.textContent = pendingGroups;
+      overdueGroupsEl.textContent = overdueGroups;
+
+      statsSummary.classList.remove('hidden');
+    }
+
+    function renderTable(rows, headerMap) {
+      const container = document.getElementById('table-container');
+      const remarksSection = document.getElementById('remarks-section');
+
+      if (!rows || rows.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No data available.</p>';
+        remarksSection.classList.add('hidden');
+        return;
+      }
+
+      // Calculate and display statistics
+      calculateStatistics(rows, headerMap);
+
+      const missing = Object.entries(headerMap)
+        .filter(([_, actual]) => !actual)
+        .map(([wanted]) => wanted);
+
+      const notice = document.getElementById('notice');
+      if (missing.length) {
+        notice.classList.remove('hidden');
+        notice.textContent = `Warning: Missing columns in CSV: ${missing.join(', ')}`;
+      } else {
+        notice.classList.add('hidden');
+        notice.textContent = '';
+      }
+
+      const thead = `
+        <thead>
+          <tr>
+            ${TARGET_HEADERS.map((h, index) => `
+              <th class="px-2 sm:px-3 py-2 bg-green-50 text-center font-semibold border-b border-gray-200 whitespace-nowrap" scope="col" aria-label="${h}">${h}</th>
+            `).join('')}
+          </tr>
+        </thead>
+      `;
+
+      const tbody = `
+        <tbody>
+          ${rows.map((rowObj, rowIndex) => {
+            const tds = TARGET_HEADERS.map((h, colIndex) => {
+              const actual = headerMap[h];
+              const val = actual ? (rowObj[actual] ?? '') : '';
+              const statusClass = getStatusClass(val, h);
+              return `<td class="px-2 sm:px-3 py-2 border-b border-gray-100 text-center ${statusClass} whitespace-nowrap" aria-label="${h}: ${val}">${val}</td>`;
+            }).join('');
+            return `<tr class="odd:bg-gray-50 hover:bg-green-50 transition-colors duration-200" role="row" aria-rowindex="${rowIndex + 2}">${tds}</tr>`;
+          }).join('')}
+        </tbody>
+      `;
+
+      // Render only the table in the scrollable container
+      container.innerHTML = `
+        <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden" role="table" aria-label="Lab status data">
+          <caption class="sr-only">Lab 4 Gas Absorption Status Table showing grading status, group information, and submission details</caption>
+          ${thead}
+          ${tbody}
+        </table>
+      `;
+
+      // Show the remarks section
+      remarksSection.classList.remove('hidden');
+    }
+
+    async function fetchCsvText(url, retryCount = 0) {
+      try {
+        // cache-busting for GitHub Pages and static hosting
+        const bust = (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+        const res = await fetch(url + bust, { 
+          cache: 'no-store',
+          headers: {
+            'Accept': 'text/csv,text/plain,*/*',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (!res.ok) {
+          const snippet = await res.text().catch(() => '');
+          throw new Error(`Fetch failed: ${res.status} ${res.statusText}${snippet ? ' - ' + snippet.slice(0, 200) : ''}`);
+        }
+        
+        // Return both text and last-modified header
+        const text = await res.text();
+        const lastModified = res.headers.get('last-modified');
+        return { text, lastModified };
+      } catch (error) {
+        if (retryCount < MAX_RETRIES) {
+          console.warn(`Fetch attempt ${retryCount + 1} failed, retrying in ${RETRY_DELAY}ms...`, error.message);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)));
+          return fetchCsvText(url, retryCount + 1);
+        }
+        throw error;
+      }
+    }
+
+    async function loadAndRender(forceRefresh = false) {
+      const tableContainer = document.getElementById('table-container');
+      const notice = document.getElementById('notice');
+      const updateEl = document.getElementById('update-date');
+      const reloadBtn = document.getElementById('reload');
+
+      // Show loading state
+      notice.classList.add('hidden');
+      notice.textContent = '';
+      reloadBtn.disabled = true;
+      reloadBtn.innerHTML = `
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Loading...
+        </span>
+      `;
+
+      tableContainer.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12">
+          <div class="flex items-center gap-3 text-gray-500 mb-2">
+            <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span class="text-lg font-medium">Loading lab data...</span>
+          </div>
+          <p class="text-sm text-gray-400">Please wait while we fetch the latest information</p>
+        </div>
+      `;
+
+      try {
+        // Check cache first
+        const now = Date.now();
+        if (!forceRefresh && dataCache.data && (now - dataCache.timestamp) < CACHE_DURATION) {
+          console.log('Using cached data');
+          updateEl.textContent = new Date(dataCache.timestamp).toLocaleString();
+          renderTable(dataCache.data, dataCache.headers);
+          return;
+        }
+
+        const result = await fetchCsvText(CSV_URL);
+        // Remove BOM character if present
+        const cleanText = result.text.replace(/^\uFEFF/, '');
+        const parsed = Papa.parse(cleanText, { header: true, skipEmptyLines: true });
+        
+        if (parsed.errors && parsed.errors.length) {
+          console.warn('Papa Parse warnings:', parsed.errors);
+        }
+        
+        const rows = parsed.data || [];
+        const headers = parsed.meta?.fields || [];
+        const headerMap = buildHeaderMap(headers);
+
+        // Use last-modified time from CSV file, fallback to current time
+        const csvLastModified = result.lastModified ? new Date(result.lastModified) : new Date();
+
+        // Update cache
+        dataCache = {
+          data: rows,
+          timestamp: csvLastModified.getTime(),
+          headers: headerMap
+        };
+
+        updateEl.textContent = csvLastModified.toLocaleString();
+        renderTable(rows, headerMap);
+        
+      } catch (e) {
+        console.error('Error loading data:', e);
+        tableContainer.innerHTML = `
+          <div class="p-3 rounded-md bg-red-50 border border-red-200 text-red-700">
+            <div class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p class="font-semibold">Failed to load data</p>
+                <p class="text-sm mt-1">${e.message}</p>
+                <button onclick="loadAndRender(true)" class="mt-2 text-sm text-red-600 hover:text-red-800 underline">
+                  Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } finally {
+        // Reset button state
+        reloadBtn.disabled = false;
+        reloadBtn.innerHTML = `
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Reload
+          </span>
+        `;
+      }
+    }
+
+
+    // Help functionality
+    function showHelp() {
+      const helpContent = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="help-modal">
+          <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+              <h3 class="text-base sm:text-lg font-semibold text-gray-900">Keyboard Shortcuts</h3>
+              <button id="close-help" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700">Reload data</span>
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono">Ctrl+R</kbd>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700">Admin Login</span>
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono">Ctrl+A</kbd>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700">Scores</span>
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono">Ctrl+S</kbd>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700">Show Help</span>
+                <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono">?</kbd>
+              </div>
+            </div>
+            <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+              <h4 class="font-medium text-gray-900 mb-2 text-sm sm:text-base">Contact Developer</h4>
+              <div class="text-xs sm:text-sm text-gray-600">
+                Email: <a href="mailto:Kantaphan.P@chula.ac.th" class="text-blue-600 hover:text-blue-800 hover:underline font-medium break-all">Kantaphan.P@chula.ac.th</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', helpContent);
+      
+      // Close modal functionality
+      document.getElementById('close-help').addEventListener('click', () => {
+        document.getElementById('help-modal').remove();
+      });
+      
+      // Close on escape key
+      document.addEventListener('keydown', function closeOnEscape(e) {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('help-modal');
+          if (modal) {
+            modal.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+          }
+        }
+      });
+      
+      // Close on backdrop click
+      document.getElementById('help-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'help-modal') {
+          document.getElementById('help-modal').remove();
+        }
+      });
+    }
+
+    // Admin login functionality
+    function showAdminLogin() {
+      const loginContent = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="admin-login-modal">
+          <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+              <h3 class="text-base sm:text-lg font-semibold text-gray-900">Admin Login</h3>
+              <button id="close-admin-login" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <form id="admin-login-form" class="space-y-3 sm:space-y-4">
+              <div>
+                <label for="admin-username" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" id="admin-username" name="username" required 
+                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                       placeholder="Enter admin username">
+              </div>
+              <div>
+                <label for="admin-password" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="admin-password" name="password" required 
+                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                       placeholder="Enter admin password">
+              </div>
+              <div id="login-error" class="hidden text-red-600 text-xs sm:text-sm"></div>
+              <button type="submit" 
+                      class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 text-sm sm:text-base rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                Login to Admin Portal
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', loginContent);
+      
+      // Close modal functionality
+      document.getElementById('close-admin-login').addEventListener('click', () => {
+        document.getElementById('admin-login-modal').remove();
+      });
+      
+      // Close on escape key
+      document.addEventListener('keydown', function closeOnEscape(e) {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('admin-login-modal');
+          if (modal) {
+            modal.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+          }
+        }
+      });
+      
+      // Close on backdrop click
+      document.getElementById('admin-login-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'admin-login-modal') {
+          document.getElementById('admin-login-modal').remove();
+        }
+      });
+      
+      // Handle form submission
+      document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('admin-username').value;
+        const password = document.getElementById('admin-password').value;
+        const errorDiv = document.getElementById('login-error');
+        
+        // Simple authentication (in real app, this would be server-side)
+        if (username === 'admin' && password === '@dmin') {
+          // Redirect to admin portal
+          window.location.href = 'admin.html';
+        } else {
+          errorDiv.textContent = 'Invalid username or password';
+          errorDiv.classList.remove('hidden');
+        }
+      });
+    }
+
+    // Event listeners
+    document.getElementById('reload').addEventListener('click', () => loadAndRender(true));
+    document.getElementById('score-btn').addEventListener('click', () => {
+      window.location.href = 'scores.html';
+    });
+    document.getElementById('admin-btn').addEventListener('click', showAdminLogin);
+    document.getElementById('help-btn').addEventListener('click', showHelp);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + R for reload
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        loadAndRender(true);
+      }
+      // Ctrl/Cmd + A for admin login
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        showAdminLogin();
+      }
+      // Ctrl/Cmd + S for scores page
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        window.location.href = 'scores.html';
+      }
+      // ? for help
+      if (e.key === '?') {
+        e.preventDefault();
+        showHelp();
+      }
+    });
+
+    // Initialize
+    loadAndRender();
+  </script>
+</body>
+</html>
