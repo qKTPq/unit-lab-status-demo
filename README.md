@@ -6,6 +6,7 @@ A comprehensive web-based laboratory status tracking and grade management system
 
 - [Overview](#overview)
 - [Features](#features)
+- [Grading System](#grading-system)
 - [System Architecture](#system-architecture)
 - [Pages & Functionality](#pages--functionality)
 - [Data Sources](#data-sources)
@@ -25,6 +26,12 @@ This application serves as a digital hub for **Lab 4: Gas Absorption** in the co
 - **Instructor:** Asst. Prof. Dr. Pichaya In-na
 - **Teaching Assistant:** Mr. Kantaphan Punnaanan
 - **Institution:** Department of Chemical Technology, Faculty of Science, Chulalongkorn University
+
+**Current Semester Data:**
+- **Total Students:** 70 students across 10 groups
+- **Students per Group:** 7 students
+- **Lab Schedule:** August 15 - November 7, 2024
+- **Total Points:** 50 points per student (Performance: 10, Oral Exam: 20, Prelab: 20)
 
 ## ✨ Features
 
@@ -46,12 +53,46 @@ This application serves as a digital hub for **Lab 4: Gas Absorption** in the co
 - Group comparison metrics
 - Individual student progress tracking
 - Statistical analysis with normal distribution curves
+- Detailed scoring breakdowns by category
+- Grade distribution analysis across all components
 
 ### 📱 **Responsive Design**
 - Mobile-first approach with Tailwind CSS
 - Cross-device compatibility
 - Thai language support with proper font rendering
 - Accessible design with ARIA labels and keyboard navigation
+
+## 📈 Grading System
+
+### **Individual Student Assessment (50 points total)**
+
+#### **Lab Performance (10 points)**
+- **Punctuality:** 1 point
+- **Active Participation:** 2 points
+- **Knowledge/Skills:** 2 points
+- **Manner:** 1 point
+- **Presentation:** 2 points
+- **Group Learning:** 2 points
+
+#### **Oral Examination (20 points)**
+- Comprehensive oral assessment of lab understanding
+- Individual evaluation of theoretical knowledge
+- Practical application demonstration
+
+#### **Pre-lab Preparation (20 points)**
+- **Theory/Calculation Method:** 4 points
+- **Relevant Background Knowledge:** 4 points
+- **Determination of Variables:** 4 points
+- **Experimental Plan and Procedures:** 4 points
+- **Safety Considerations:** 4 points
+
+### **Group Assessment (20 points total)**
+
+#### **Full Report (20 points)**
+- **Theory, Experimental Methods:** 3 points
+- **Experimental Results (graphs):** 4 points
+- **Appendix (calculations, tables):** 5 points
+- **Discussion and Conclusion:** 8 points
 
 ## 🏗️ System Architecture
 
@@ -102,16 +143,23 @@ This application serves as a digital hub for **Lab 4: Gas Absorption** in the co
 
 ## 📊 Data Sources
 
-The system integrates multiple CSV data sources:
+The system integrates multiple CSV data sources with comprehensive student and group data:
 
-| File | Purpose | Key Fields |
-|------|---------|------------|
-| `452-Check List-KTP.csv` | Main status tracking | Status, Group, Safety, Prelab, Full Report, Calculation, Due, Over Due |
-| `452-Full Report.csv` | Group report grades | Theory, Results, Appendix, Discussion scores |
-| `452-Group-Name.csv` | Student-group mapping | ID, Name, Group |
-| `452-Performance.csv` | Lab performance scores | Total (10) points |
-| `452-Oral Exam.csv` | Oral examination scores | Oral Exam (20) points |
-| `452-Prelab.csv` | Pre-lab preparation scores | Total (20) points |
+| File | Purpose | Key Fields | Records |
+|------|---------|------------|---------|
+| `452-Check List-KTP.csv` | Main status tracking | Status, NO., Date, Group, Safety, Prelab, Full Report, Calculation, Due, Over Due | 10 groups |
+| `452-Full Report.csv` | Group report grades | Theory (3), Results (4), Appendix (5), Discussion (8), Total Score | 11 groups |
+| `452-Group-Name.csv` | Student-group mapping | Group, ID, Name | 70 students |
+| `452-Performance.csv` | Lab performance scores | Punctuality (1), Active Participation (2), Knowledge/Skills (2), Manner (1), Presentation (2), Group Learning (2), Total (10) | 70 students |
+| `452-Oral Exam.csv` | Oral examination scores | Oral Exam (20) | 70 students |
+| `452-Prelab.csv` | Pre-lab preparation scores | Theory/Calculation (4), Background Knowledge (4), Variables (4), Procedures (4), Safety (4), Total (20) | 70 students |
+
+### Current Lab Status (as of latest data):
+- **Total Groups:** 10 groups
+- **Total Students:** 70 students (7 students per group)
+- **Completed Labs:** 5 groups (Groups 1, 3, 5, 7, 9)
+- **Pending Labs:** 3 groups (Groups 2, 6, 10)
+- **Overdue Labs:** 2 groups (Groups 4, 8)
 
 ## 🛠️ Technologies Used
 
@@ -141,8 +189,8 @@ The system integrates multiple CSV data sources:
 ### Quick Start
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/452-lab4-status.git
-   cd 452-lab4-status
+   git clone https://github.com/ktp/unit-lab-status-demo.git
+   cd unit-lab-status-demo
    ```
 
 2. **Serve the files:**
@@ -153,13 +201,21 @@ The system integrates multiple CSV data sources:
    # Using Node.js
    npx serve .
    
-   # Or simply open index.html in a browser
+   # Using PHP (if available)
+   php -S localhost:8000
+   
+   # Or simply open index.html in a browser (limited functionality)
    ```
 
 3. **Access the application:**
    - Main Status: `http://localhost:8000/`
    - Admin Portal: `http://localhost:8000/admin.html`
    - Score Access: `http://localhost:8000/scores.html`
+
+4. **For production deployment:**
+   - Upload all files to your web server
+   - Ensure CSV files are accessible
+   - Configure HTTPS for secure access
 
 ## 📖 Usage Guide
 
