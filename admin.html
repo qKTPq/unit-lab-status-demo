@@ -1454,7 +1454,7 @@
                   categoryScores.discussion.push(score);
                 }
                 
-                groupScores[groupNum].total += score;
+                groupScores[groupNum].total = Math.round((groupScores[groupNum].total + score) * 100) / 100;
               }
             }
           });
@@ -1464,10 +1464,10 @@
       // Update statistics
       const scores = Object.values(groupScores).map(g => g.total).filter(s => s > 0);
       const stats = {
-        'avg-group-score': scores.length > 0 ? `${(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)}/20` : '0.00/20',
-        'highest-group-score': scores.length > 0 ? `${Math.max(...scores).toFixed(2)}/20` : '0.00/20',
+        'avg-group-score': scores.length > 0 ? `${Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100}/20` : '0.00/20',
+        'highest-group-score': scores.length > 0 ? `${Math.round(Math.max(...scores) * 100) / 100}/20` : '0.00/20',
         'graded-groups': scores.length,
-        'total-points': `${scores.reduce((a, b) => a + b, 0).toFixed(2)}/20`
+        'total-points': `${Math.round(scores.reduce((a, b) => a + b, 0) * 100) / 100}/20`
       };
       
       Object.entries(stats).forEach(([id, value]) => {
@@ -1551,7 +1551,7 @@
           const groupReportScore = groupScores[group] ? groupScores[group].total : 0;
           
           // Calculate total individual score (Performance + Oral Exam + Prelab + Group Report)
-          const totalIndividualScore = performanceScore + oralExamScore + prelabScore + groupReportScore;
+          const totalIndividualScore = Math.round((performanceScore + oralExamScore + prelabScore + groupReportScore) * 100) / 100;
           
           const studentData = {
             studentId: studentId.trim(),
@@ -1577,7 +1577,7 @@
       const totalStudents = groupNameData.length;
       const studentsGraded = individualScores.length;
       const avgStudentScore = individualScores.length > 0 ? 
-        (individualScores.reduce((a, b) => a + b, 0) / individualScores.length).toFixed(1) : '0';
+        Math.round((individualScores.reduce((a, b) => a + b, 0) / individualScores.length) * 100) / 100 : 0;
       const avgStudentsPerGroup = (totalStudents / Object.keys(studentsByGroup).length).toFixed(1);
 
       const stats = {
@@ -1821,7 +1821,7 @@
       const groupAverages = sortedGroups.map(group => {
         const students = studentsByGroup[group];
         const scores = students.map(s => s.totalIndividualScore).filter(s => s > 0);
-        return scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+        return scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100 : 0;
       });
       
       if (sortedGroups.length > 0 && groupAverages.some(avg => avg > 0)) {
@@ -2446,7 +2446,7 @@
       const groupStudents = studentsByGroup[group] || [];
       const groupScoresList = groupStudents.map(s => s.totalIndividualScore).filter(s => s > 0);
       const groupAverage = groupScoresList.length > 0 ? 
-        (groupScoresList.reduce((a, b) => a + b, 0) / groupScoresList.length).toFixed(1) : '0';
+        Math.round((groupScoresList.reduce((a, b) => a + b, 0) / groupScoresList.length) * 100) / 100 : 0;
       
       // Calculate group rank
       const sortedGroupScores = groupScoresList.sort((a, b) => b - a);
