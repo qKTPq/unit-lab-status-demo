@@ -1464,10 +1464,10 @@
       // Update statistics
       const scores = Object.values(groupScores).map(g => g.total).filter(s => s > 0);
       const stats = {
-        'avg-group-score': scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0,
-        'highest-group-score': scores.length > 0 ? Math.max(...scores) : 0,
+        'avg-group-score': scores.length > 0 ? `${(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)}/20` : '0.00/20',
+        'highest-group-score': scores.length > 0 ? `${Math.max(...scores).toFixed(2)}/20` : '0.00/20',
         'graded-groups': scores.length,
-        'total-points': scores.reduce((a, b) => a + b, 0).toFixed(1)
+        'total-points': `${scores.reduce((a, b) => a + b, 0).toFixed(2)}/20`
       };
       
       Object.entries(stats).forEach(([id, value]) => {
@@ -2099,11 +2099,11 @@
         return `
           <tr class="hover:bg-gray-50">
             <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-900">Group ${group}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${scores.theory}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${scores.results}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${scores.appendix}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${scores.discussion}</td>
-            <td class="px-4 py-3 text-sm font-semibold text-gray-900">${scores.total}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.theory.toFixed(2)}/3</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.results.toFixed(2)}/4</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.appendix.toFixed(2)}/5</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${scores.discussion.toFixed(2)}/8</td>
+            <td class="px-4 py-3 text-sm font-semibold text-gray-900">${scores.total.toFixed(2)}/20</td>
             <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
               <div class="flex items-center">
                 <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
@@ -2167,7 +2167,7 @@
                 </button>
               </td>
               <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${scoreClass}">
-                ${totalScore > 0 ? `${totalScore}/${maxScore} (${percentage}%)` : '—'}
+                ${totalScore > 0 ? `${totalScore.toFixed(2)}/${maxScore} (${percentage}%)` : '—'}
               </td>
               <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${statusClass}">${groupStatus}</td>
             </tr>
@@ -2326,12 +2326,12 @@
       const maxScore = 70;
       const totalPercentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
       
-      document.getElementById('modal-total-score').textContent = totalScore;
+      document.getElementById('modal-total-score').textContent = `${totalScore.toFixed(2)}/70`;
       document.getElementById('modal-total-percentage').textContent = `${totalPercentage}%`;
-      document.getElementById('modal-performance-score').textContent = student.performanceScore;
-      document.getElementById('modal-oral-score').textContent = student.oralExamScore;
-      document.getElementById('modal-prelab-score').textContent = student.prelabScore;
-      document.getElementById('modal-group-score').textContent = student.groupReportScore;
+      document.getElementById('modal-performance-score').textContent = `${student.performanceScore.toFixed(2)}/10`;
+      document.getElementById('modal-oral-score').textContent = `${student.oralExamScore.toFixed(2)}/20`;
+      document.getElementById('modal-prelab-score').textContent = `${student.prelabScore.toFixed(2)}/20`;
+      document.getElementById('modal-group-score').textContent = `${student.groupReportScore.toFixed(2)}/20`;
       
       // Detailed score breakdown
       populateScoreBreakdown(student);
@@ -2379,7 +2379,7 @@
               <div class="font-medium">${comp.name}</div>
               <div class="text-xs text-gray-500">${comp.description}</div>
             </td>
-            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-900">${comp.score}</td>
+            <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-900">${comp.score.toFixed(2)}/${comp.max}</td>
             <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${comp.max}</td>
             <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">${percentage}%</td>
             <td class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm ${statusClass}">${statusText}</td>
