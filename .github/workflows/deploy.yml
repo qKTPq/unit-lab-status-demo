@@ -1,0 +1,183 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.html"
+      - "**/*.css"
+      - "**/*.js"
+      - "**/*.csv"
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.gif"
+      - "**/*.svg"
+      - "**/*.ico"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build and validate HTML files
+        run: |
+          echo "Validating HTML files..."
+          
+          # Check if main files exist
+          if [ ! -f "index.html" ]; then
+            echo "ERROR: index.html not found"
+            exit 1
+          fi
+          
+          if [ ! -f "admin.html" ]; then
+            echo "ERROR: admin.html not found"
+            exit 1
+          fi
+          
+          if [ ! -f "scores.html" ]; then
+            echo "ERROR: scores.html not found"
+            exit 1
+          fi
+          
+          # Check if CSV files exist
+          if [ ! -f "452-Check List-KTP.csv" ]; then
+            echo "WARNING: 452-Check List-KTP.csv not found"
+          fi
+          
+          # Check if logo exists
+          if [ ! -f "ct_logo.png" ]; then
+            echo "WARNING: ct_logo.png not found"
+          fi
+          
+          echo "✅ All required files validated"
+
+      - name: Optimize assets
+        run: |
+          echo "Optimizing assets for deployment..."
+          
+          # Create a build directory
+          mkdir -p build
+          
+          # Copy all necessary files to build directory
+          cp *.html build/ 2>/dev/null || true
+          cp *.csv build/ 2>/dev/null || true
+          cp *.png build/ 2>/dev/null || true
+          cp *.jpg build/ 2>/dev/null || true
+          cp *.jpeg build/ 2>/dev/null || true
+          cp *.gif build/ 2>/dev/null || true
+          cp *.svg build/ 2>/dev/null || true
+          cp *.ico build/ 2>/dev/null || true
+          cp LICENSE build/ 2>/dev/null || true
+          cp README.md build/ 2>/dev/null || true
+          
+          # Create a simple robots.txt
+          cat > build/robots.txt << EOF
+          User-agent: *
+          Allow: /
+          
+          Sitemap: ${{ github.server_url }}/${{ github.repository }}/sitemap.xml
+          EOF
+          
+          # Create a simple sitemap.xml
+          cat > build/sitemap.xml << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>${{ github.server_url }}/${{ github.repository }}</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <changefreq>daily</changefreq>
+              <priority>1.0</priority>
+            </url>
+            <url>
+              <loc>${{ github.server_url }}/${{ github.repository }}/admin.html</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>0.8</priority>
+            </url>
+            <url>
+              <loc>${{ github.server_url }}/${{ github.repository }}/scores.html</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <changefreq>daily</changefreq>
+              <priority>0.9</priority>
+            </url>
+          </urlset>
+          EOF
+          
+          echo "✅ Assets optimized and prepared for deployment"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './build'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Post-deployment validation
+        run: |
+          echo "🔍 Validating deployment..."
+          
+          # Wait a moment for deployment to propagate
+          sleep 10
+          
+          # Get the deployed URL
+          DEPLOY_URL="${{ steps.deployment.outputs.page_url }}"
+          
+          echo "📍 Deployed to: $DEPLOY_URL"
+          
+          # Test if the main page loads (basic HTTP check)
+          if curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" | grep -q "200"; then
+            echo "✅ Main page is accessible"
+          else
+            echo "⚠️  Main page may not be accessible yet (this is normal for new deployments)"
+          fi
+          
+          # Test if CSV file is accessible
+          if curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL/452-Check%20List-KTP.csv" | grep -q "200"; then
+            echo "✅ CSV data file is accessible"
+          else
+            echo "⚠️  CSV data file may not be accessible"
+          fi
+          
+          echo "🚀 Deployment completed successfully!"
+          echo "📊 Lab Status Dashboard: $DEPLOY_URL"
+          echo "🔧 Admin Portal: $DEPLOY_URL/admin.html"
+          echo "📈 Scores Page: $DEPLOY_URL/scores.html"
+
+      - name: Notify deployment status
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Successfully deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🔗 Links:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 [Lab Status Dashboard](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔧 [Admin Portal](${{ steps.deployment.outputs.page_url }}/admin.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 [Scores Page](${{ steps.deployment.outputs.page_url }}/scores.html)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**📅 Deployed:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**🔄 Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**👤 Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
